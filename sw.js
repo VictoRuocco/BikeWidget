@@ -1,4 +1,4 @@
-const CACHE = 'bikewidget_v1';
+const CACHE = 'bikewidget';
 const ASSETS = [
   './',
   './index.html',

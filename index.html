@@ -1,554 +1,879 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BikeWidget</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BikeWidget">
+<link rel="manifest" href="manifest.json">
+<title>BikeWidget</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        body {
-            background-color: #0b0c10;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --accent: #1DB954; 
+    --accent2: #1ed760;
+    --text: #f0f0f8;
+    --muted: #6b7280;
+    --border: rgba(255,255,255,0.08);
+    --green: #22c55e;
+    --amber: #f59e0b;
+  }
 
-        /* --- HEADER --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: #12141c;
-            border-bottom: 1px solid #1f2330;
-        }
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    touch-action: none;
+  }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #1db954;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 14px;
-        }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
 
-        .logo-area svg {
-            width: 18px;
-            height: 18px;
-        }
+  #topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
 
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #7a7f91;
-            text-transform: uppercase;
-        }
+  #logo {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    text-transform: uppercase;
+  }
 
-        .toggle-container .active-label {
-            color: #ffffff;
-        }
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider-t {
+    position: absolute;
+    inset: 0;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+    transition: background 0.2s;
+  }
+  .slider-t::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle input:checked + .slider-t { background: #11381e; }
+  .toggle input:checked + .slider-t::before { transform: translateX(20px); background: var(--accent); }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
+  #main {
+    display: flex;
+    flex: 1;
+    gap: 0;
+    overflow: hidden;
+  }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+  #clock-panel {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border-right: 0.5px solid var(--border);
+    padding: 20px 12px;
+    gap: 16px;
+  }
 
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #2e3440;
-            transition: .3s;
-            border-radius: 24px;
-        }
+  #clock-time {
+    font-size: clamp(42px, 12vw, 72px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #a3be8c;
-            transition: .3s;
-            border-radius: 50%;
-        }
+  #clock-seconds {
+    font-size: clamp(18px, 5vw, 28px);
+    font-weight: 300;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
 
-        input:checked + .slider {
-            background-color: #4c566a;
-        }
+  #clock-date {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+  }
 
-        input:checked + .slider:before {
-            transform: translateX(20px);
-            background-color: #d8dee9;
-        }
+  #ring-wrap {
+    position: relative;
+    width: 80px; height: 80px;
+  }
+  #ring-wrap svg { transform: rotate(-90deg); }
+  #ring-bg { stroke: var(--surface2); }
+  #ring-fill { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
+  #ring-time {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+  }
 
-        /* --- MAIN LAYOUT --- */
-        .widget-container {
-            flex: 1;
-            display: flex;
-            width: 100%;
-        }
+  #awake-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  #awake-btn.active {
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+  #awake-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.2s;
+  }
+  #awake-btn.active #awake-dot { background: var(--green); }
 
-        /* Colonna Sinistra: Orologio */
-        .clock-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-right: 1px solid #1f2330;
-            padding: 20px;
-            position: relative;
-        }
+  #music-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    padding: 16px 14px;
+    gap: 14px;
+    overflow: hidden;
+  }
 
-        .time-display {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+  #now-playing-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
 
-        .time-hours-mins {
-            font-size: 72px;
-            font-weight: 300;
-            line-height: 1;
-            color: #ffffff;
-        }
+  #track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 
-        .time-seconds {
-            font-size: 32px;
-            font-weight: 400;
-            color: #1db954;
-            margin-top: 5px;
-            display: block;
-        }
+  #track-title {
+    font-size: clamp(14px, 3.5vw, 18px);
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .date-display {
-            font-size: 14px;
-            color: #7a7f91;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-        }
+  #track-artist {
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .progress-circle-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+  #art-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    max-height: 120px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
 
-        .progress-circle-container svg {
-            transform: rotate(-90deg);
-            width: 120px;
-            height: 120px;
-        }
+  #art-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
 
-        .progress-circle-bg {
-            fill: none;
-            stroke: #1f2330;
-            stroke-width: 6;
-        }
+  #art-icon {
+    font-size: 36px;
+    opacity: 0.25;
+  }
 
-        .progress-circle-bar {
-            fill: none;
-            stroke: #1db954;
-            stroke-width: 6;
-            stroke-dasharray: 339.29;
-            stroke-dashoffset: 0;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 1s linear;
-        }
+  #progress-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
-        .circle-text {
-            position: absolute;
-            font-size: 13px;
-            color: #1db954;
-            font-weight: 500;
-        }
+  #progress-bar-bg {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
 
-        .screen-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #12141c;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #7a7f91;
-            border: 1px solid #1f2330;
-        }
+  #progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+  }
 
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background-color: #a3be8c;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #a3be8c;
-        }
+  #progress-times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
 
-        /* Colonna Destra: Spotify */
-        .spotify-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 30px 20px;
-            overflow-y: auto;
-        }
+  #controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
 
-        .section-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #53586b;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 25px;
-            align-self: flex-start;
-        }
+	.ctrl-btn {
+	  background: none;
+	  border: none;
+	  /* MODIFICATO: Cambiato da var(--muted) a var(--text) per avere il bianco ad alto contrasto */
+	  color: var(--text); 
+	  cursor: pointer;
+	  padding: 12px; /* Aumentato il padding per rendere la zona di tocco più grande in bici */
+	  border-radius: 50%;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  transition: color 0.15s, background 0.15s;
+	  appearance: none;
+	  -webkit-appearance: none;
+	  font-size: 26px; /* Aumentata la dimensione dell'icona per vederla meglio */
+	}
 
-        .album-art-container {
-            width: 100%;
-            max-width: 220px;
-            aspect-ratio: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
-            background-color: #12141c;
-        }
+	/* Effetto al tocco: i tasti si illuminano del verde Spotify per darti un feedback visivo */
+	.ctrl-btn:active { 
+	  background: var(--surface2); 
+	  color: var(--accent2); 
+	}
 
-        .album-art-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+  #play-btn {
+    width: 52px; height: 52px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 20px;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    flex-shrink: 0;
+  }
+  #play-btn:active { transform: scale(0.93); }
 
-        .track-details {
-            width: 100%;
-            max-width: 220px;
-            text-align: left;
-            margin-bottom: 15px;
-        }
+  #spotify-connect-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    align-self: center;
+  }
 
-        .track-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
+  #media-status {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 4px 0;
+    letter-spacing: 0.04em;
+  }
 
-        .track-artist {
-            font-size: 13px;
-            color: #7a7f91;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+  #media-status.connected { color: var(--green); }
+  #media-status.error { color: var(--amber); }
 
-        /* Barra avanzamento */
-        .track-progress-wrapper {
-            width: 100%;
-            max-width: 220px;
-            margin-bottom: 25px;
-        }
+  #lockscreen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    cursor: pointer;
+  }
+  #lockscreen.visible { display: flex; }
 
-        .progress-bar-bg {
-            width: 100%;
-            height: 4px;
-            background-color: #1f2330;
-            border-radius: 2px;
-            margin-bottom: 8px;
-            position: relative;
-        }
+  #ls-time {
+    font-size: clamp(56px, 18vw, 96px);
+    font-weight: 100;
+    color: #fff;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
 
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background-color: #1db954;
-            border-radius: 2px;
-            transition: width 1s linear;
-        }
+  #ls-date {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 
-        .time-stamps {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #53586b;
-            font-weight: 500;
-        }
+  #ls-music {
+    background: rgba(255,255,255,0.08);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 16px 24px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-        /* CONTROLLI MULTIMEDIALI FISSI */
-        .player-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 24px;
-            width: 100%;
-            max-width: 220px;
-            margin-bottom: 20px;
-        }
+  #ls-track-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .control-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            outline: none;
-            transition: transform 0.1s ease;
-        }
+  #ls-track-artist {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .control-btn:active {
-            transform: scale(0.9);
-        }
+  #ls-controls {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    align-items: center;
+  }
 
-        .control-btn.secondary svg {
-            width: 26px;
-            height: 26px;
-            fill: #7a7f91;
-        }
-        .control-btn.secondary:hover svg {
-            fill: #ffffff;
-        }
+  .ls-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
 
-        /* Il cerchione verde della foto */
-        .control-btn.main-play {
-            width: 64px;
-            height: 64px;
-            background-color: #1db954;
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
-        }
+  #ls-play-btn {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
 
-        .control-btn.main-play svg {
-            width: 28px;
-            height: 28px;
-            fill: #000000;
-        }
+  #ls-hint {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
 
-        .status-message {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1db954;
-            letter-spacing: 0.5px;
-            margin-top: 5px;
-            cursor: pointer;
-        }
-    </style>
+  @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.3.0/dist/tabler-icons.min.css');
+</style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-area">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM5 12c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6-3.5-3.5S3.1 13.5 5 13.5s3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm14.5-8.5c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm-5.7-8.3l-2.4-3.7c-.4-.6-1.1-1-1.8-1H6v2h3.4l1.8 2.8-3.7 7.3h2.2l2.8-5.7 3.5 3.2c.4.4 1 .6 1.5.6H21v-2h-4.3l-2.9-2.5z"/></svg>
-            BIKEWIDGET
-        </div>
-        <div class="toggle-container">
-            <span>Normale</span>
-            <label class="switch">
-                <input type="checkbox" id="mode-toggle">
-                <span class="slider"></span>
-            </label>
-            <span class="active-label">Blocco</span>
-        </div>
-    </header>
+<div id="app">
+  <div id="topbar">
+    <span id="logo">🚴 BikeWidget</span>
+    <div class="toggle-wrap">
+      <span class="toggle-label" id="mode-label">NORMALE</span>
+      <label class="toggle">
+        <input type="checkbox" id="lockmode-toggle">
+        <span class="slider-t"></span>
+      </label>
+      <span class="toggle-label">BLOCCO</span>
+    </div>
+  </div>
 
-    <div class="widget-container">
-        
-        <div class="clock-column">
-            <div class="time-display">
-                <div class="time-hours-mins" id="clock-time">00:00</div>
-                <div class="time-seconds" id="clock-seconds">: 00</div>
-            </div>
-            <div class="date-display" id="clock-date">---</div>
-            <div class="progress-circle-container">
-                <svg>
-                    <circle class="progress-circle-bg" cx="60" cy="60" r="54"></circle>
-                    <circle class="progress-circle-bar" id="seconds-circle" cx="60" cy="60" r="54"></circle>
-                </svg>
-                <div class="circle-text" id="circle-inner-time">00:00</div>
-            </div>
-            <div class="screen-status">
-                <div class="status-dot"></div>
-                Schermo attivo
-            </div>
+  <div id="main">
+    <div id="clock-panel">
+      <div>
+        <div id="clock-time">00:00</div>
+        <div style="display:flex;align-items:baseline;gap:6px;justify-content:center;margin-top:4px;">
+          <span style="font-size:13px;color:var(--muted)">:</span>
+          <span id="clock-seconds" style="font-size:clamp(24px,7vw,40px)">00</span>
         </div>
+      </div>
+      <div id="clock-date">—</div>
 
-        <div class="spotify-column">
-            <div class="section-title">In riproduzione</div>
-            <div class="album-art-container">
-                <img id="album-cover" src="icon-192.png" alt="Album Art">
-            </div>
-            <div class="track-details">
-                <div class="track-title" id="track-name">Nessuna traccia</div>
-                <div class="track-artist" id="track-artist">Spotify scollegato</div>
-            </div>
-            <div class="track-progress-wrapper">
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="track-progress-bar"></div>
-                </div>
-                <div class="time-stamps">
-                    <span id="time-current">0:00</span>
-                    <span id="time-total">0:00</span>
-                </div>
-            </div>
+      <div id="ring-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle id="ring-bg" cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
+          <circle id="ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="5"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div id="ring-time">00:00</div>
+      </div>
 
-            <div class="player-controls">
-                <button class="control-btn secondary" id="btn-prev">
-                    <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 18V6z"/></svg>
-                </button>
-                <button class="control-btn main-play" id="btn-play-pause">
-                    <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </button>
-                <button class="control-btn secondary" id="btn-next">
-                    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>
-                </button>
-            </div>
-            <div class="status-message" id="auth-status">Connetti Spotify</div>
-        </div>
+      <button id="awake-btn">
+        <span id="awake-dot"></span>
+        <span id="awake-text">Schermo attivo</span>
+      </button>
     </div>
 
-    <script>
-        // ==========================================
-        // CONFIGURA QUI IL TUO CLIENT ID SPOTIFY
-        // ==========================================
-        const CLIENT_ID = '7ff19c5a7f6744b8b16c84883a384e3c'; 
-        const REDIRECT_URI = window.location.origin + window.location.pathname;
-        const SCOPES = 'user-read-currently-playing user-modify-playback-state';
+    <div id="music-panel">
+      <div id="now-playing-label">In riproduzione (Spotify)</div>
 
-        // Elementi DOM
-        const circleBar = document.getElementById('seconds-circle');
-        const circumference = 2 * Math.PI * 54;
-        circleBar.style.strokeDasharray = `${circumference} ${circumference}`;
+      <div id="art-wrap">
+        <span id="art-icon">♪</span>
+        <img id="art-image" alt="Album Art">
+      </div>
 
-        // 1. Gestione Orologio Locale
-        function updateClock() {
-            const now = new Date();
-            let h = now.getHours().toString().padStart(2, '0');
-            let m = now.getMinutes().toString().padStart(2, '0');
-            let s = now.getSeconds();
+      <div id="track-info">
+        <div id="track-title">Nessuna traccia</div>
+        <div id="track-artist">—</div>
+      </div>
 
-            document.getElementById('clock-time').textContent = `${h}:${m}`;
-            document.getElementById('circle-inner-time').textContent = `${h}:${m}`;
-            document.getElementById('clock-seconds').textContent = `: ${s.toString().padStart(2, '0')}`;
+      <button id="spotify-connect-btn">Connetti a Spotify</button>
 
-            const dateOptions = { weekday: 'long', day: 'numeric', month: 'short' };
-            document.getElementById('clock-date').textContent = now.toLocaleDateString('it-IT', dateOptions).replace('.', '');
-            circleBar.style.strokeDashoffset = circumference - (s / 60) * circumference;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+      <div id="progress-wrap">
+        <div id="progress-bar-bg"><div id="progress-bar-fill"></div></div>
+        <div id="progress-times">
+          <span id="time-current">0:00</span>
+          <span id="time-total">0:00</span>
+        </div>
+      </div>
 
-        // 2. Autenticazione OAuth implicit grant di Spotify
-        let accessToken = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
-        
-        if (!accessToken) {
-            document.getElementById('auth-status').addEventListener('click', () => {
-                window.location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&response_type=token&show_dialog=true`;
-            });
-        } else {
-            window.location.hash = ''; // Pulisce l'URL
-            document.getElementById('auth-status').textContent = "Spotify Connesso";
-            document.getElementById('auth-status').style.color = "#1db954";
-            
-            // Avvia il loop di aggiornamento dei dati traccia
-            setInterval(fetchCurrentTrack, 3000);
-            fetchCurrentTrack();
-        }
+			<div id="controls">
+			  <!-- Pulsante Volume Giù -->
+			  <button class="ctrl-btn" id="btn-vol-down" aria-label="Abbassa Volume">
+			    <i class="ti ti-volume-minus" aria-hidden="true"></i>
+			  </button>
+			  
+			  <button class="ctrl-btn" id="btn-prev" aria-label="Precedente">
+			    <i class="ti ti-player-skip-back" aria-hidden="true"></i>
+			  </button>
+			  <button id="play-btn" aria-label="Play/Pausa">
+			    <i class="ti ti-player-play" id="play-icon" aria-hidden="true"></i>
+			  </button>
+			  <button class="ctrl-btn" id="btn-next" aria-label="Successivo">
+			    <i class="ti ti-player-skip-forward" aria-hidden="true"></i>
+			  </button>
 
-        // 3. Recupero traccia in tempo reale
-        function formatTime(ms) {
-            let totalSecs = Math.floor(ms / 1000);
-            let mins = Math.floor(totalSecs / 60);
-            let secs = (totalSecs % 60).toString().padStart(2, '0');
-            return `${mins}:${secs}`;
-        }
+			  <!-- Pulsante Volume Su -->
+			  <button class="ctrl-btn" id="btn-vol-up" aria-label="Alza Volume">
+			    <i class="ti ti-volume-plus" aria-hidden="true"></i>
+			  </button>
+			</div>
 
-        function fetchCurrentTrack() {
-            fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-                headers: { 'Authorization': 'Bearer ' + accessToken }
-            })
-            .then(res => {
-                if(res.status === 401) { window.location.reload(); } // Token scaduto
-                if(res.status === 204) return null; // Nessuna traccia attiva
-                return res.json();
-            })
-            .then(data => {
-                if(!data || !data.item) return;
+      <div id="media-status">In attesa di Spotify...</div>
+    </div>
+  </div>
+</div>
 
-                document.getElementById('track-name').textContent = data.item.name;
-                document.getElementById('track-artist').textContent = data.item.artists.map(a => a.name).join(', ');
-                document.getElementById('album-cover').src = data.item.album.images[0].url;
-                
-                // Aggiorna progressi
-                let progress = data.progress_ms;
-                let duration = data.item.duration_ms;
-                document.getElementById('time-current').textContent = formatTime(progress);
-                document.getElementById('time-total').textContent = formatTime(duration);
-                document.getElementById('track-progress-bar').style.width = `${(progress / duration) * 100}%`;
+<div id="lockscreen" role="button" aria-label="Tocca per sbloccare">
+  <div id="ls-time">00:00</div>
+  <div id="ls-date">—</div>
 
-                // Aggiorna Icona Stato Play/Pause
-                const playIcon = document.getElementById('play-icon');
-                if(data.is_playing) {
-                    playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Icona Pausa
-                } else {
-                    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Icona Play
-                }
-            })
-            .catch(err => console.log("Errore API:", err));
-        }
+  <div id="ls-music">
+    <div style="font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:2px">In riproduzione</div>
+    <div id="ls-track-title">Nessuna traccia</div>
+    <div id="ls-track-artist">—</div>
+    <div id="ls-controls">
+      <button class="ls-btn" id="ls-prev" aria-label="Precedente">
+        <i class="ti ti-player-skip-back" aria-hidden="true"></i>
+      </button>
+      <button id="ls-play-btn" aria-label="Play/Pausa">
+        <i class="ti ti-player-play" id="ls-play-icon" aria-hidden="true"></i>
+      </button>
+      <button class="ls-btn" id="ls-next" aria-label="Successivo">
+        <i class="ti ti-player-skip-forward" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div id="ls-hint">Tocca per tornare all'app</div>
+</div>
 
-        // 4. Azioni dei bottoni (API di controllo)
-        function spotifyControl(action, method = 'POST') {
-            fetch(`https://api.spotify.com/v1/me/player/${action}`, {
-                method: method,
-                headers: { 'Authorization': 'Bearer ' + accessToken }
-            }).then(() => setTimeout(fetchCurrentTrack, 500));
-        }
+<script>
+// ==========================================
+// CONFIGURAZIONE SPOTIFY PKCE
+// ==========================================
+const SPOTIFY_CLIENT_ID = '7ff19c5a7f6744b8b16c84883a384e3c';
+const SPOTIFY_REDIRECT_URI = window.location.origin + window.location.pathname;
 
-        document.getElementById('btn-next').addEventListener('click', () => spotifyControl('next'));
-        document.getElementById('btn-prev').addEventListener('click', () => spotifyControl('previous'));
-        
-        document.getElementById('btn-play-pause').addEventListener('click', () => {
-            const playIcon = document.getElementById('play-icon');
-            // Controllo grossolano basato sull'icona attuale per invertire lo stato
-            if(playIcon.innerHTML.includes('M6')) { 
-                spotifyControl('pause', 'PUT');
-            } else {
-                spotifyControl('play', 'PUT');
-            }
-        });
-    </script>
+// Helper crittografici per PKCE Flow
+function generateRandomString(length) {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(values, x => possible[x % possible.length]).join('');
+}
+
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return crypto.subtle.digest('SHA-256', data);
+}
+
+function base64urlencode(a) {
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(a)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// =====================
+// CLOCK
+// =====================
+const DAYS = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const pad = n => String(n).padStart(2,'0');
+
+function updateClock() {
+  const now = new Date();
+  const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
+
+  document.getElementById('clock-time').textContent = `${h}:${m}`;
+  document.getElementById('clock-seconds').textContent = s;
+  document.getElementById('ls-time').textContent = `${h}:${m}`;
+
+  const dateStr = `${DAYS[now.getDay()]} ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+  document.getElementById('clock-date').textContent = dateStr;
+  document.getElementById('ls-date').textContent = dateStr;
+  document.getElementById('ring-time').textContent = `${h}:${m}`;
+
+  const secInMin = now.getSeconds();
+  const circumference = 213.6;
+  const offset = circumference - (secInMin / 60) * circumference;
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// =====================
+// WAKE LOCK
+// =====================
+let wakeLock = null;
+const awakeBtn = document.getElementById('awake-btn');
+const awakeText = document.getElementById('awake-text');
+
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      awakeBtn.classList.add('active');
+      awakeText.textContent = 'Schermo bloccato ON';
+      wakeLock.addEventListener('release', () => {
+        awakeBtn.classList.remove('active');
+        awakeText.textContent = 'Schermo attivo';
+        wakeLock = null;
+      });
+    } catch(e) { awakeText.textContent = 'Non supportato'; }
+  } else { awakeText.textContent = 'Non supportato'; }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) { await wakeLock.release(); }
+  awakeBtn.classList.remove('active'); awakeText.textContent = 'Schermo attivo';
+}
+awakeBtn.addEventListener('click', () => { if (wakeLock) releaseWakeLock(); else requestWakeLock(); });
+
+// =====================
+// LOGICA PLAYER E API SPOTIFY
+// =====================
+let accessToken = null;
+let isPlaying = false;
+let progressMs = 0;
+let durationMs = 0;
+let progressInterval = null;
+
+const trackTitle = document.getElementById('track-title');
+const trackArtist = document.getElementById('track-artist');
+const lsTitle = document.getElementById('ls-track-title');
+const lsArtist = document.getElementById('ls-track-artist');
+const artIcon = document.getElementById('art-icon');
+const artImage = document.getElementById('art-image');
+const playIcon = document.getElementById('play-icon');
+const lsPlayIcon = document.getElementById('ls-play-icon');
+const progressFill = document.getElementById('progress-bar-fill');
+const timeCurrent = document.getElementById('time-current');
+const timeTotal = document.getElementById('time-total');
+const statusEl = document.getElementById('media-status');
+const connectBtn = document.getElementById('spotify-connect-btn');
+
+function fmtTime(ms) {
+  if (!ms || isNaN(ms)) return '0:00';
+  const sec = Math.floor(ms / 1000);
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return `${m}:${pad(s)}`;
+}
+
+// Avvia il Login Ufficiale PKCE autorizzato da Spotify
+async function loginToSpotify() {
+  const codeVerifier = generateRandomString(64);
+  const hashed = await sha256(codeVerifier);
+  const codeChallenge = base64urlencode(hashed);
+
+  localStorage.setItem('spotify_code_verifier', codeVerifier);
+
+  const scopes = 'user-read-playback-state user-modify-playback-state';
+  const authUrl = new URL("https://accounts.spotify.com/authorize");
+
+  const params = {
+    response_type: 'code',
+    client_id: SPOTIFY_CLIENT_ID,
+    scope: scopes,
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+    code_challenge_method: 'S256',
+    code_challenge: codeChallenge,
+  };
+
+  authUrl.search = new URLSearchParams(params).toString();
+  window.location.href = authUrl.toString();
+}
+
+// Scambia il codice temporaneo nell'URL con un vero Access Token funzionante
+async function exchangeCodeForToken(code) {
+  const codeVerifier = localStorage.getItem('spotify_code_verifier');
+
+  const payload = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: SPOTIFY_REDIRECT_URI,
+      code_verifier: codeVerifier
+    }),
+  };
+
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', payload);
+    const data = await res.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      localStorage.setItem('spotify_token', accessToken);
+      if (data.refresh_token) localStorage.setItem('spotify_refresh_token', data.refresh_token);
+      return true;
+    }
+  } catch (e) { console.error(e); }
+  return false;
+}
+
+async function spotifyFetch(endpoint, method = 'GET') {
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/${endpoint}`, {
+      method: method,
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (res.status === 401) {
+      statusEl.textContent = 'Sincronizzazione scaduta. Riconnetti.';
+      statusEl.className = 'error';
+      connectBtn.style.display = 'block';
+      return null;
+    }
+    if (res.status === 204) return true;
+    return await res.json();
+  } catch (e) { return null; }
+}
+
+function startLocalProgress() {
+  clearInterval(progressInterval);
+  if (!isPlaying) return;
+  progressInterval = setInterval(() => {
+    if (progressMs < durationMs) {
+      progressMs += 1000;
+      updateProgressUi();
+    }
+  }, 1000);
+}
+
+function updateProgressUi() {
+  timeCurrent.textContent = fmtTime(progressMs);
+  const percent = durationMs > 0 ? (progressMs / durationMs) * 100 : 0;
+  progressFill.style.width = `${percent}%`;
+}
+
+async function getCurrentlyPlaying() {
+  if (!accessToken) return;
+  const data = await spotifyFetch('me/player');
+  
+  if (data && data.item) {
+    connectBtn.style.display = 'none';
+    statusEl.textContent = 'Spotify Connesso';
+    statusEl.className = 'connected';
+
+    trackTitle.textContent = data.item.name;
+    lsTitle.textContent = data.item.name;
+    const artists = data.item.artists.map(a => a.name).join(', ');
+    trackArtist.textContent = artists;
+    lsArtist.textContent = artists;
+
+    durationMs = data.item.duration_ms;
+    progressMs = data.progress_ms;
+    timeTotal.textContent = fmtTime(durationMs);
+    updateProgressUi();
+
+    isPlaying = data.is_playing;
+    const iconClass = isPlaying ? 'ti-player-pause' : 'ti-player-play';
+    playIcon.className = `ti ${iconClass}`;
+    lsPlayIcon.className = `ti ${iconClass}`;
+
+    if (data.item.album.images && data.item.album.images.length > 0) {
+      artImage.src = data.item.album.images[0].url;
+      artImage.style.display = 'block';
+      artIcon.style.display = 'none';
+    }
+    startLocalProgress();
+  } else {
+    statusEl.textContent = 'Nessun brano attivo. Avvia Spotify sul telefono.';
+    statusEl.className = '';
+  }
+}
+
+document.getElementById('play-btn').addEventListener('click', async () => {
+  if (!accessToken) return;
+  const endpoint = isPlaying ? 'me/player/pause' : 'me/player/play';
+  await spotifyFetch(endpoint, 'PUT');
+  isPlaying = !isPlaying;
+  const iconClass = isPlaying ? 'ti-player-pause' : 'ti-player-play';
+  playIcon.className = `ti ${iconClass}`;
+  lsPlayIcon.className = `ti ${iconClass}`;
+  startLocalProgress();
+  setTimeout(getCurrentlyPlaying, 400);
+});
+
+document.getElementById('btn-prev').addEventListener('click', async () => {
+  await spotifyFetch('me/player/previous', 'POST');
+  setTimeout(getCurrentlyPlaying, 400);
+});
+
+document.getElementById('btn-next').addEventListener('click', async () => {
+  await spotifyFetch('me/player/next', 'POST');
+  setTimeout(getCurrentlyPlaying, 400);
+});
+
+document.getElementById('ls-play-btn').addEventListener('click', e => { e.stopPropagation(); document.getElementById('play-btn').click(); });
+document.getElementById('ls-prev').addEventListener('click', e => { e.stopPropagation(); document.getElementById('btn-prev').click(); });
+document.getElementById('ls-next').addEventListener('click', e => { e.stopPropagation(); document.getElementById('btn-next').click(); });
+connectBtn.addEventListener('click', loginToSpotify);
+
+// Controllo dei parametri nell'URL per catturare il codice d'accesso generato da Spotify
+async function initAuth() {
+  const args = new URLSearchParams(window.location.search);
+  const code = args.get('code');
+
+  if (code) {
+    // Trovato il codice nell'URL, lo scambiamo con il Token definitivo
+    statusEl.textContent = 'Autenticazione in corso...';
+    const success = await exchangeCodeForToken(code);
+    if (success) {
+      // Puliamo l'URL dai parametri per un aspetto pulito della PWA
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  } else {
+    accessToken = localStorage.getItem('spotify_token');
+  }
+
+  if (!accessToken) {
+    connectBtn.style.display = 'block';
+    statusEl.textContent = 'Connessione a Spotify richiesta.';
+  } else {
+    setInterval(getCurrentlyPlaying, 3000);
+    getCurrentlyPlaying();
+  }
+}
+
+initAuth();
+
+// =====================
+// LOCKSCREEN MODE
+// =====================
+const lockscreen = document.getElementById('lockscreen');
+const lockmodeToggle = document.getElementById('lockmode-toggle');
+
+lockmodeToggle.addEventListener('change', () => {
+  if (lockmodeToggle.checked) {
+    lockscreen.classList.add('visible');
+    document.getElementById('mode-label').textContent = 'NORMALE';
+  } else {
+    lockscreen.classList.remove('visible');
+    document.getElementById('mode-label').textContent = 'BLOCCO';
+  }
+});
+
+lockscreen.addEventListener('click', () => {
+  lockscreen.classList.remove('visible');
+  lockmodeToggle.checked = false;
+  document.getElementById('mode-label').textContent = 'NORMALE';
+});
+
+lockscreen.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>
