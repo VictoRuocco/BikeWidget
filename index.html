@@ -16,7 +16,7 @@
     --bg: #0a0a0f;
     --surface: #13131a;
     --surface2: #1c1c26;
-    --accent: #1DB954; /* Cambiato in verde Spotify */
+    --accent: #1DB954; 
     --accent2: #1ed760;
     --text: #f0f0f8;
     --muted: #6b7280;
@@ -41,7 +41,6 @@
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   }
 
-  /* === TOP BAR === */
   #topbar {
     display: flex;
     align-items: center;
@@ -97,7 +96,6 @@
   .toggle input:checked + .slider-t { background: #11381e; }
   .toggle input:checked + .slider-t::before { transform: translateX(20px); background: var(--accent); }
 
-  /* === MAIN === */
   #main {
     display: flex;
     flex: 1;
@@ -105,7 +103,6 @@
     overflow: hidden;
   }
 
-  /* === CLOCK PANEL === */
   #clock-panel {
     width: 45%;
     display: flex;
@@ -187,7 +184,6 @@
   }
   #awake-btn.active #awake-dot { background: var(--green); }
 
-  /* === MUSIC PANEL === */
   #music-panel {
     flex: 1;
     display: flex;
@@ -346,7 +342,6 @@
   #media-status.connected { color: var(--green); }
   #media-status.error { color: var(--amber); }
 
-  /* === LOCKSCREEN OVERLAY === */
   #lockscreen {
     display: none;
     position: fixed;
@@ -549,10 +544,28 @@
 
 <script>
 // ==========================================
-// CONFIGURAZIONE SPOTIFY (INSERISCI I TUOI DATI)
+// CONFIGURAZIONE SPOTIFY PKCE
 // ==========================================
-const SPOTIFY_CLIENT_ID = '7ff19c5a7f6744b8b16c84883a384e3c'; 
+const SPOTIFY_CLIENT_ID = '7ff19c5a7f6744b8b16c84883a384e3c';
 const SPOTIFY_REDIRECT_URI = window.location.origin + window.location.pathname;
+
+// Helper crittografici per PKCE Flow
+function generateRandomString(length) {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(values, x => possible[x % possible.length]).join('');
+}
+
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return crypto.subtle.digest('SHA-256', data);
+}
+
+function base64urlencode(a) {
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(a)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 // =====================
 // CLOCK
@@ -611,7 +624,7 @@ async function releaseWakeLock() {
 awakeBtn.addEventListener('click', () => { if (wakeLock) releaseWakeLock(); else requestWakeLock(); });
 
 // =====================
-// INTEGRAZIONE SPOTIFY API
+// LOGICA PLAYER E API SPOTIFY
 // =====================
 let accessToken = null;
 let isPlaying = false;
@@ -640,17 +653,57 @@ function fmtTime(ms) {
   return `${m}:${pad(s)}`;
 }
 
-// Estrae il token dall'URL dopo il login
-function getAccessTokenFromUrl() {
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  return params.get('access_token');
+// Avvia il Login Ufficiale PKCE autorizzato da Spotify
+async function loginToSpotify() {
+  const codeVerifier = generateRandomString(64);
+  const hashed = await sha256(codeVerifier);
+  const codeChallenge = base64urlencode(hashed);
+
+  localStorage.setItem('spotify_code_verifier', codeVerifier);
+
+  const scopes = 'user-read-playback-state user-modify-playback-state';
+  const authUrl = new URL("https://accounts.spotify.com/authorize");
+
+  const params = {
+    response_type: 'code',
+    client_id: SPOTIFY_CLIENT_ID,
+    scope: scopes,
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+    code_challenge_method: 'S256',
+    code_challenge: codeChallenge,
+  };
+
+  authUrl.search = new URLSearchParams(params).toString();
+  window.location.href = authUrl.toString();
 }
 
-function loginToSpotify() {
-  const scopes = 'user-read-playback-state user-modify-playback-state';
-  // CORRETTO: rimosso l'errore di formattazione della stringa
-  window.location.href = `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${encodeURIComponent(SPOTIFY_REDIRECT_URI)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
+// Scambia il codice temporaneo nell'URL con un vero Access Token funzionante
+async function exchangeCodeForToken(code) {
+  const codeVerifier = localStorage.getItem('spotify_code_verifier');
+
+  const payload = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: SPOTIFY_REDIRECT_URI,
+      code_verifier: codeVerifier
+    }),
+  };
+
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', payload);
+    const data = await res.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      localStorage.setItem('spotify_token', accessToken);
+      if (data.refresh_token) localStorage.setItem('spotify_refresh_token', data.refresh_token);
+      return true;
+    }
+  } catch (e) { console.error(e); }
+  return false;
 }
 
 async function spotifyFetch(endpoint, method = 'GET') {
@@ -660,12 +713,12 @@ async function spotifyFetch(endpoint, method = 'GET') {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
     if (res.status === 401) {
-      statusEl.textContent = 'Token scaduto. Riconnetti.';
+      statusEl.textContent = 'Sincronizzazione scaduta. Riconnetti.';
       statusEl.className = 'error';
       connectBtn.style.display = 'block';
       return null;
     }
-    if (res.status === 204) return true; // Risposta vuota di successo (es. pause/next)
+    if (res.status === 204) return true;
     return await res.json();
   } catch (e) { return null; }
 }
@@ -693,7 +746,7 @@ async function getCurrentlyPlaying() {
   
   if (data && data.item) {
     connectBtn.style.display = 'none';
-    statusEl.textContent = 'Spotify Sincronizzato';
+    statusEl.textContent = 'Spotify Connesso';
     statusEl.className = 'connected';
 
     trackTitle.textContent = data.item.name;
@@ -719,83 +772,14 @@ async function getCurrentlyPlaying() {
     }
     startLocalProgress();
   } else {
-    statusEl.textContent = 'Apri Spotify sul telefono e avvia una traccia';
+    statusEl.textContent = 'Nessun brano attivo. Avvia Spotify sul telefono.';
     statusEl.className = '';
   }
 }
 
-// Controlli Player Remoti
 document.getElementById('play-btn').addEventListener('click', async () => {
   if (!accessToken) return;
   const endpoint = isPlaying ? 'me/player/pause' : 'me/player/play';
   await spotifyFetch(endpoint, 'PUT');
   isPlaying = !isPlaying;
-  const iconClass = isPlaying ? 'ti-player-pause' : 'ti-player-play';
-  playIcon.className = `ti ${iconClass}`;
-  lsPlayIcon.className = `ti ${iconClass}`;
-  startLocalProgress();
-  setTimeout(getCurrentlyPlaying, 500);
-});
-
-document.getElementById('btn-prev').addEventListener('click', async () => {
-  await spotifyFetch('me/player/previous', 'POST');
-  setTimeout(getCurrentlyPlaying, 500);
-});
-
-document.getElementById('btn-next').addEventListener('click', async () => {
-  await spotifyFetch('me/player/next', 'POST');
-  setTimeout(getCurrentlyPlaying, 500);
-});
-
-document.getElementById('ls-play-btn').addEventListener('click', e => { e.stopPropagation(); document.getElementById('play-btn').click(); });
-document.getElementById('ls-prev').addEventListener('click', e => { e.stopPropagation(); document.getElementById('btn-prev').click(); });
-document.getElementById('ls-next').addEventListener('click', e => { e.stopPropagation(); document.getElementById('btn-next').click(); });
-connectBtn.addEventListener('click', loginToSpotify);
-
-// Inizializzazione autenticazione
-accessToken = getAccessTokenFromUrl();
-if (accessToken) {
-  window.location.hash = ''; // Pulisce l'URL
-  localStorage.setItem('spotify_token', accessToken);
-} else {
-  accessToken = localStorage.getItem('spotify_token');
-}
-
-if (!accessToken) {
-  connectBtn.style.display = 'block';
-  statusEl.textContent = 'Richiesta connessione a Spotify';
-} else {
-  setInterval(getCurrentlyPlaying, 3000); // Sincronizza lo stato reale ogni 3 secondi
-  getCurrentlyPlaying();
-}
-
-// =====================
-// LOCKSCREEN MODE
-// =====================
-const lockscreen = document.getElementById('lockscreen');
-const lockmodeToggle = document.getElementById('lockmode-toggle');
-
-lockmodeToggle.addEventListener('change', () => {
-  if (lockmodeToggle.checked) {
-    lockscreen.classList.add('visible');
-    document.getElementById('mode-label').textContent = 'NORMALE';
-  } else {
-    lockscreen.classList.remove('visible');
-    document.getElementById('mode-label').textContent = 'BLOCCO';
-  }
-});
-
-lockscreen.addEventListener('click', () => {
-  lockscreen.classList.remove('visible');
-  lockmodeToggle.checked = false;
-  document.getElementById('mode-label').textContent = 'NORMALE';
-});
-
-lockscreen.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-</script>
-</body>
-</html>
+  const iconClass = isPlaying
