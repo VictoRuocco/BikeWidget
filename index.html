@@ -105,8 +105,9 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text);
 #play-btn:active { transform:scale(.91); background:#2563eb; }
 
 #vol-wrap { display:flex; align-items:center; gap:8px; }
-#vol-slider { -webkit-appearance:none; appearance:none; flex:1; height:3px; background:var(--surf3); border-radius:2px; outline:none; cursor:pointer; }
-#vol-slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent2); cursor:pointer; border:2px solid var(--bg); }
+#vol-level { font-size:11px; font-variant-numeric:tabular-nums; color:var(--text2); min-width:28px; text-align:center; }
+.vol-btn { width:34px; height:34px; background:var(--surf2); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background .15s,border-color .15s; }
+.vol-btn:active { background:var(--surf3); border-color:var(--accent); }
 
 #media-status { font-size:9px; color:var(--muted); letter-spacing:.04em; }
 #media-status.ok  { color:var(--green); }
@@ -270,11 +271,26 @@ html,body { width:100%; height:100%; background:var(--bg); color:var(--text);
         </div>
 
         <div id="vol-wrap">
+          <!-- Icona volume -->
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
             <path d="M11 5L6 9H2v6h4l5 4V5Z" fill="#505870"/>
             <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12" stroke="#505870" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <input type="range" id="vol-slider" min="0" max="100" value="80">
+          <!-- Tasto − -->
+          <button class="vol-btn" id="btn-vol-down" type="button" aria-label="Volume giù">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="11" width="16" height="2" rx="1" fill="#f0f0fa"/>
+            </svg>
+          </button>
+          <!-- Livello corrente -->
+          <span id="vol-level">—</span>
+          <!-- Tasto + -->
+          <button class="vol-btn" id="btn-vol-up" type="button" aria-label="Volume su">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="11" width="16" height="2" rx="1" fill="#f0f0fa"/>
+              <rect x="11" y="4" width="2" height="16" rx="1" fill="#f0f0fa"/>
+            </svg>
+          </button>
         </div>
 
         <div id="media-status">Connetti Spotify per iniziare</div>
@@ -627,6 +643,8 @@ function updateTrackUI(data) {
   const prog   = data.progress_ms || 0;
   const dur    = item.duration_ms || 0;
   const play   = data.is_playing || false;
+  // Volume corrente dal device attivo
+  if (data.device?.volume_percent != null) setVolumeDisplay(data.device.volume_percent);
 
   document.getElementById('track-title').textContent  = title;
   document.getElementById('track-artist').textContent = artist;
@@ -697,10 +715,22 @@ document.getElementById('btn-next').addEventListener('click', async () => {
   setTimeout(pollPlayback, 800);
 });
 
-// Volume
-document.getElementById('vol-slider').addEventListener('change', async e => {
-  await spotifyCall(`/me/player/volume?volume_percent=${e.target.value}`, 'PUT');
-});
+// Volume — tasti − e +
+let currentVolume = 50; // aggiornato dal polling
+
+function setVolumeDisplay(v) {
+  currentVolume = Math.max(0, Math.min(100, v));
+  document.getElementById('vol-level').textContent = `${currentVolume}%`;
+}
+
+async function changeVolume(delta) {
+  const newVol = Math.max(0, Math.min(100, currentVolume + delta));
+  setVolumeDisplay(newVol);
+  await spotifyCall(`/me/player/volume?volume_percent=${newVol}`, 'PUT');
+}
+
+document.getElementById('btn-vol-down').addEventListener('click', () => changeVolume(-10));
+document.getElementById('btn-vol-up').addEventListener('click',   () => changeVolume(+10));
 
 // Mirror su lockscreen
 document.getElementById('ls-play-btn').addEventListener('click', e => {
