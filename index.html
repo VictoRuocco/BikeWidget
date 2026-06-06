@@ -11,473 +11,184 @@
 <link rel="manifest" href="manifest.json">
 <title>BikeWidget</title>
 <style>
-/* ─────────────────────────────────────────────
-   RESET & VARIABILI
-───────────────────────────────────────────── */
 *, *::before, *::after {
-  margin: 0; padding: 0; box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-font-smoothing: antialiased;
+  margin:0; padding:0; box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
 }
-
 :root {
-  --bg:       #0a0a12;
-  --surf:     #12121e;
-  --surf2:    #1e1e2e;
-  --surf3:    #252538;
-  --accent:   #4f8ef7;
-  --accent2:  #93c5fd;
-  --text:     #f0f0fa;
-  --text2:    #a0a8c0;
-  --muted:    #505870;
-  --border:   rgba(255,255,255,0.09);
-  --green:    #34d399;
-  --amber:    #fbbf24;
-  --red:      #f87171;
-
-  /* Galaxy A55 landscape: 2340×1080 fisici, density=3 → ~780×360 CSS dp */
-  /* Topbar: 32px → rimane 328px di altezza utile */
-  --topbar-h: 32px;
-  --content-h: calc(100vh - var(--topbar-h));
+  --bg:#0a0a12; --surf:#12121e; --surf2:#1e1e2e; --surf3:#252538;
+  --accent:#4f8ef7; --accent2:#93c5fd;
+  --text:#f0f0fa; --text2:#a0a8c0; --muted:#505870;
+  --border:rgba(255,255,255,0.09);
+  --green:#34d399; --amber:#fbbf24; --red:#f87171;
+  --spotify:#1DB954;
+  --topbar-h:36px;
 }
+html,body { width:100%; height:100%; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Roboto',sans-serif;
+  overflow:hidden; touch-action:none; }
 
-html, body {
-  width: 100%; height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-  overflow: hidden;
-  touch-action: none;
-}
+/* ── APP ── */
+#app { display:flex; flex-direction:column; height:100vh; width:100vw; }
 
-/* ─────────────────────────────────────────────
-   APP ROOT
-───────────────────────────────────────────── */
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-}
-
-/* ─────────────────────────────────────────────
-   TOP BAR
-───────────────────────────────────────────── */
+/* ── TOPBAR ── */
 #topbar {
-  height: var(--topbar-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  background: var(--surf);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+  height:var(--topbar-h); display:flex; align-items:center;
+  justify-content:space-between; padding:0 14px;
+  background:var(--surf); border-bottom:1px solid var(--border); flex-shrink:0;
 }
+#logo { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--accent2); text-transform:uppercase; }
+.tog-wrap { display:flex; align-items:center; gap:8px; }
+.tog-label { font-size:10px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+.tog { position:relative; width:38px; height:20px; cursor:pointer; }
+.tog input { opacity:0; width:0; height:0; }
+.tog-track { position:absolute; inset:0; background:var(--surf3); border-radius:10px; border:1px solid var(--border); transition:background .2s; }
+.tog-thumb { position:absolute; width:14px; height:14px; left:3px; top:3px; background:var(--muted); border-radius:50%; transition:transform .2s,background .2s; }
+.tog input:checked ~ .tog-track { background:#1a3060; }
+.tog input:checked ~ .tog-thumb { transform:translateX(18px); background:var(--accent); }
 
-#logo {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .2em;
-  color: var(--accent2);
-  text-transform: uppercase;
-}
+/* ── MAIN ── */
+#main { display:flex; flex:1; height:calc(100vh - var(--topbar-h)); overflow:hidden; }
 
-/* Toggle Normale / Blocco */
-.tog-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.tog-label {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-.tog {
-  position: relative;
-  width: 38px; height: 20px;
-  cursor: pointer;
-}
-.tog input { opacity: 0; width: 0; height: 0; }
-.tog-track {
-  position: absolute; inset: 0;
-  background: var(--surf3);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  transition: background .2s;
-}
-.tog-thumb {
-  position: absolute;
-  width: 14px; height: 14px;
-  left: 3px; top: 3px;
-  background: var(--muted);
-  border-radius: 50%;
-  transition: transform .2s, background .2s;
-}
-.tog input:checked ~ .tog-track { background: #1a3060; }
-.tog input:checked ~ .tog-thumb { transform: translateX(18px); background: var(--accent); }
-
-/* ─────────────────────────────────────────────
-   MAIN — due colonne landscape
-───────────────────────────────────────────── */
-#main {
-  display: flex;
-  flex: 1;
-  height: var(--content-h);
-  overflow: hidden;
-}
-
-/* ══════════════════════════════════════════
-   PANNELLO OROLOGIO  — sinistra 40%
-══════════════════════════════════════════ */
+/* ════ CLOCK ════ */
 #clock-panel {
-  width: 40%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--surf);
-  border-right: 1px solid var(--border);
-  padding: 10px 12px;
-  gap: 8px;
+  width:40%; height:100%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  background:var(--surf); border-right:1px solid var(--border);
+  padding:10px 12px; gap:8px;
 }
+#clock-hm { display:flex; align-items:flex-end; gap:4px; line-height:1; }
+#clock-time { font-size:clamp(60px,15vw,100px); font-weight:100; letter-spacing:-.04em; color:var(--text); font-variant-numeric:tabular-nums; }
+#clock-colon-sec { display:flex; flex-direction:column; align-items:center; padding-bottom:6px; gap:2px; }
+.colon-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); }
+#clock-seconds { font-size:clamp(22px,5vw,36px); font-weight:300; color:var(--accent); font-variant-numeric:tabular-nums; }
+#clock-date { font-size:clamp(10px,1.6vw,13px); color:var(--text2); letter-spacing:.1em; text-transform:uppercase; }
+#ring-wrap { position:relative; width:clamp(56px,10vw,80px); height:clamp(56px,10vw,80px); }
+#ring-wrap svg { width:100%; height:100%; transform:rotate(-90deg); }
+#ring-bg { stroke:var(--surf3); }
+#ring-fill { stroke:var(--accent); stroke-linecap:round; stroke-dasharray:213.6; stroke-dashoffset:213.6; transition:stroke-dashoffset .9s linear; }
+#ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--accent2); letter-spacing:.03em; font-variant-numeric:tabular-nums; }
+#awake-btn { display:flex; align-items:center; gap:6px; background:var(--surf3); border:1px solid var(--border); border-radius:16px; padding:5px 12px; font-size:10px; color:var(--text2); cursor:pointer; transition:border-color .2s,color .2s; }
+#awake-btn.on { border-color:var(--green); color:var(--green); }
+#awake-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); transition:background .2s; flex-shrink:0; }
+#awake-btn.on #awake-dot { background:var(--green); }
 
-/* HH:MM grande */
-#clock-hm {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  line-height: 1;
-}
-#clock-time {
-  font-size: clamp(60px, 15vw, 100px);
-  font-weight: 100;
-  letter-spacing: -.04em;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-#clock-colon-sec {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 6px;
-  gap: 2px;
-}
-.colon-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-#clock-seconds {
-  font-size: clamp(22px, 5vw, 36px);
-  font-weight: 300;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Data */
-#clock-date {
-  font-size: clamp(10px, 1.6vw, 13px);
-  color: var(--text2);
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-
-/* Ring anello minuti */
-#ring-wrap {
-  position: relative;
-  width: clamp(56px, 10vw, 80px);
-  height: clamp(56px, 10vw, 80px);
-}
-#ring-wrap svg {
-  width: 100%; height: 100%;
-  transform: rotate(-90deg);
-}
-#ring-bg   { stroke: var(--surf3); }
-#ring-fill {
-  stroke: var(--accent);
-  stroke-linecap: round;
-  stroke-dasharray: 213.6;
-  stroke-dashoffset: 213.6;
-  transition: stroke-dashoffset .9s linear;
-}
-#ring-label {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px;
-  color: var(--accent2);
-  letter-spacing: .03em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Pulsante Wake Lock */
-#awake-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--surf3);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 5px 12px;
-  font-size: 10px;
-  color: var(--text2);
-  cursor: pointer;
-  transition: border-color .2s, color .2s;
-}
-#awake-btn.on { border-color: var(--green); color: var(--green); }
-#awake-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: background .2s;
-  flex-shrink: 0;
-}
-#awake-btn.on #awake-dot { background: var(--green); }
-
-/* ══════════════════════════════════════════
-   PANNELLO PLAYER  — destra 60%
-══════════════════════════════════════════ */
+/* ════ PLAYER ════ */
 #music-panel {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: row;          /* art | info */
-  align-items: center;
-  padding: 10px 16px;
-  gap: 16px;
-  background: var(--bg);
-  overflow: hidden;
+  flex:1; height:100%; display:flex; flex-direction:row;
+  align-items:center; padding:10px 16px; gap:16px;
+  background:var(--bg); overflow:hidden; position:relative;
 }
-
-/* ── Album art ── */
 #art-wrap {
-  width: clamp(90px, 18vw, 140px);
-  height: clamp(90px, 18vw, 140px);
-  flex-shrink: 0;
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  width:clamp(90px,18vw,140px); height:clamp(90px,18vw,140px); flex-shrink:0;
+  background:var(--surf2); border:1px solid var(--border); border-radius:12px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
+#art-img { width:100%; height:100%; object-fit:cover; display:none; }
+#art-icon-svg { display:flex; }
 
-/* ── Colonna info + controlli ── */
-#music-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-  overflow: hidden;
-  min-width: 0;
-}
+#music-info { flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; overflow:hidden; min-width:0; }
+#np-label { font-size:9px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+#track-title { font-size:clamp(14px,2.8vw,20px); font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#track-artist { font-size:clamp(11px,1.9vw,15px); color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-#np-label {
-  font-size: 9px;
-  letter-spacing: .14em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
+#progress-wrap { display:flex; flex-direction:column; gap:4px; }
+#progress-bar-bg { width:100%; height:3px; background:var(--surf3); border-radius:2px; overflow:hidden; cursor:pointer; }
+#progress-bar-fill { height:100%; background:var(--accent); border-radius:2px; width:0%; transition:width .5s linear; }
+#progress-times { display:flex; justify-content:space-between; font-size:9px; color:var(--muted); font-variant-numeric:tabular-nums; }
 
-#track-title {
-  font-size: clamp(14px, 2.8vw, 20px);
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+#controls { display:flex; align-items:center; gap:6px; }
+.ctrl-btn { width:clamp(40px,7vw,52px); height:clamp(40px,7vw,52px); background:var(--surf2); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background .15s,border-color .15s; }
+.ctrl-btn:active { background:var(--surf3); border-color:var(--accent); }
+#play-btn { width:clamp(50px,9vw,66px); height:clamp(50px,9vw,66px); background:var(--accent); border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:transform .1s,background .2s; }
+#play-btn:active { transform:scale(.91); background:#2563eb; }
 
-#track-artist {
-  font-size: clamp(11px, 1.9vw, 15px);
-  color: var(--text2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+#vol-wrap { display:flex; align-items:center; gap:8px; }
+#vol-slider { -webkit-appearance:none; appearance:none; flex:1; height:3px; background:var(--surf3); border-radius:2px; outline:none; cursor:pointer; }
+#vol-slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent2); cursor:pointer; border:2px solid var(--bg); }
 
-/* Progress */
-#progress-wrap { display: flex; flex-direction: column; gap: 4px; }
-#progress-bar-bg {
-  width: 100%; height: 3px;
-  background: var(--surf3);
-  border-radius: 2px;
-  overflow: hidden;
-}
-#progress-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 1s linear;
-}
-#progress-times {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
+#media-status { font-size:9px; color:var(--muted); letter-spacing:.04em; }
+#media-status.ok  { color:var(--green); }
+#media-status.err { color:var(--amber); }
 
-/* ── Controlli ── */
-#controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* ════ SPOTIFY BADGE (angolo player) ════ */
+#spotify-badge {
+  position:absolute; top:8px; right:10px;
+  display:flex; align-items:center; gap:5px;
+  font-size:9px; color:var(--muted); letter-spacing:.06em;
+  cursor:pointer; padding:3px 8px;
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:12px; transition:border-color .2s,color .2s;
 }
+#spotify-badge.linked { border-color:var(--spotify); color:var(--spotify); }
+#spotify-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); }
+#spotify-badge.linked #spotify-dot { background:var(--spotify); }
 
-/* Pulsanti secondari (prev/next) */
-.ctrl-btn {
-  width: clamp(40px, 7vw, 52px);
-  height: clamp(40px, 7vw, 52px);
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background .15s, border-color .15s;
+/* ════ SETUP OVERLAY ════ */
+#setup-overlay {
+  display:none; position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center;
 }
-.ctrl-btn:active { background: var(--surf3); border-color: var(--accent); }
+#setup-overlay.show { display:flex; }
+#setup-card {
+  background:var(--surf); border:1px solid var(--border); border-radius:20px;
+  padding:28px 28px 24px; width:min(90vw,400px);
+  display:flex; flex-direction:column; gap:16px;
+}
+#setup-card h2 { font-size:16px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+#setup-card p  { font-size:12px; color:var(--text2); line-height:1.6; }
+#setup-card a  { color:var(--accent2); text-decoration:none; }
+#setup-card a:hover { text-decoration:underline; }
+.setup-field { display:flex; flex-direction:column; gap:6px; }
+.setup-label { font-size:10px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
+.setup-input {
+  background:var(--surf2); border:1px solid var(--border); border-radius:10px;
+  padding:10px 14px; font-size:13px; color:var(--text);
+  outline:none; width:100%; font-family:monospace;
+  transition:border-color .2s;
+}
+.setup-input:focus { border-color:var(--accent); }
+.setup-hint { font-size:10px; color:var(--muted); }
+.setup-btn {
+  padding:12px; border-radius:12px; border:none;
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:opacity .2s; letter-spacing:.04em;
+}
+#btn-spotify-login { background:var(--spotify); color:#000; }
+#btn-spotify-login:active { opacity:.8; }
+#btn-setup-close { background:var(--surf3); color:var(--text2); margin-top:-4px; }
+.setup-divider { height:1px; background:var(--border); margin:4px 0; }
+.setup-step { font-size:11px; color:var(--text2); line-height:1.8; }
+.setup-step b { color:var(--text); }
 
-/* Play / Pausa */
-#play-btn {
-  width: clamp(50px, 9vw, 66px);
-  height: clamp(50px, 9vw, 66px);
-  background: var(--accent);
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform .1s, background .2s;
-}
-#play-btn:active { transform: scale(.91); background: #2563eb; }
-
-/* ── Volume ── */
-#vol-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#vol-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  flex: 1;
-  height: 3px;
-  background: var(--surf3);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
-#vol-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--accent2);
-  cursor: pointer;
-  border: 2px solid var(--bg);
-}
-
-/* ── Status ── */
-#media-status {
-  font-size: 9px;
-  color: var(--muted);
-  letter-spacing: .04em;
-}
-#media-status.ok  { color: var(--green); }
-#media-status.err { color: var(--amber); }
-
-/* ═════════════════════════════════════════════════
-   LOCKSCREEN OVERLAY
-═════════════════════════════════════════════════ */
-#lockscreen {
-  display: none;
-  position: fixed; inset: 0;
-  background: #000;
-  z-index: 200;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
-  cursor: pointer;
-}
-#lockscreen.show { display: flex; }
-
-/* Clock lockscreen */
-#ls-clock { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-#ls-time {
-  font-size: clamp(70px, 18vw, 120px);
-  font-weight: 100;
-  color: #fff;
-  letter-spacing: -.04em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-#ls-date {
-  font-size: 12px;
-  color: rgba(255,255,255,.4);
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-
-/* Card musicale lockscreen */
-#ls-music {
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 18px;
-  padding: 16px 20px;
-  width: clamp(200px, 32vw, 280px);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-#ls-np-label { font-size: 9px; letter-spacing: .12em; color: rgba(255,255,255,.3); text-transform: uppercase; }
-#ls-title  { font-size: 15px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#ls-artist { font-size: 12px; color: rgba(255,255,255,.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-#ls-controls { display: flex; justify-content: center; align-items: center; gap: 20px; }
-
-.ls-ctrl-btn {
-  width: 40px; height: 40px;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.ls-ctrl-btn:active { background: rgba(255,255,255,.2); }
-
-#ls-play-btn {
-  width: 48px; height: 48px;
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.25);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-#ls-play-btn:active { background: rgba(255,255,255,.3); }
-
-#ls-hint { font-size: 10px; color: rgba(255,255,255,.2); letter-spacing: .08em; text-transform: uppercase; text-align: center; }
+/* ════ LOCKSCREEN ════ */
+#lockscreen { display:none; position:fixed; inset:0; background:#000; z-index:200; flex-direction:row; align-items:center; justify-content:center; gap:60px; cursor:pointer; }
+#lockscreen.show { display:flex; }
+#ls-clock { display:flex; flex-direction:column; align-items:center; gap:6px; }
+#ls-time { font-size:clamp(70px,18vw,120px); font-weight:100; color:#fff; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+#ls-date { font-size:12px; color:rgba(255,255,255,.4); letter-spacing:.1em; text-transform:uppercase; }
+#ls-music { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:16px 20px; width:clamp(200px,32vw,280px); display:flex; flex-direction:column; gap:10px; }
+#ls-np-label { font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.3); text-transform:uppercase; }
+#ls-title  { font-size:15px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-artist { font-size:12px; color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-controls { display:flex; justify-content:center; align-items:center; gap:20px; }
+.ls-ctrl-btn { width:40px; height:40px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ls-ctrl-btn:active { background:rgba(255,255,255,.2); }
+#ls-play-btn { width:48px; height:48px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+#ls-hint { font-size:10px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ── TOP BAR ── -->
+  <!-- TOPBAR -->
   <div id="topbar">
     <span id="logo">🚴 BikeWidget</span>
     <div class="tog-wrap">
       <span class="tog-label">Normale</span>
-      <label class="tog" aria-label="Modalità lockscreen">
+      <label class="tog">
         <input type="checkbox" id="lockmode-toggle">
         <span class="tog-track"></span>
         <span class="tog-thumb"></span>
@@ -486,12 +197,11 @@ html, body {
     </div>
   </div>
 
-  <!-- ── MAIN ── -->
+  <!-- MAIN -->
   <div id="main">
 
-    <!-- ════ OROLOGIO ════ -->
+    <!-- CLOCK -->
     <div id="clock-panel">
-
       <div id="clock-hm">
         <div id="clock-time">00:00</div>
         <div id="clock-colon-sec">
@@ -500,331 +210,545 @@ html, body {
           <span class="colon-dot"></span>
         </div>
       </div>
-
       <div id="clock-date">—</div>
-
-      <!-- Anello minuti -->
-      <div id="ring-wrap" aria-label="Avanzamento minuto">
+      <div id="ring-wrap">
         <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
           <circle id="ring-bg"   cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
           <circle id="ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
         </svg>
         <div id="ring-label">MIN</div>
       </div>
-
-      <!-- Wake lock -->
       <button id="awake-btn" type="button">
         <span id="awake-dot"></span>
         <span id="awake-text">Schermo attivo</span>
       </button>
+    </div>
 
-    </div><!-- /clock-panel -->
-
-    <!-- ════ PLAYER ════ -->
+    <!-- PLAYER -->
     <div id="music-panel">
 
-      <!-- Art -->
-      <div id="art-wrap" aria-label="Copertina album">
-        <!-- Nota musicale SVG inline, sempre visibile -->
-        <svg id="art-icon" width="54" height="54" viewBox="0 0 24 24" fill="none"
-             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M9 18V5l12-2v13" stroke="#4f8ef7" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round"/>
+      <div id="art-wrap">
+        <img id="art-img" alt="Copertina">
+        <svg id="art-icon-svg" width="54" height="54" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18V5l12-2v13" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="6" cy="18" r="3" stroke="#4f8ef7" stroke-width="1.5"/>
           <circle cx="18" cy="16" r="3" stroke="#4f8ef7" stroke-width="1.5"/>
         </svg>
       </div>
 
-      <!-- Info + controlli -->
       <div id="music-info">
-
         <div id="np-label">In riproduzione</div>
         <div id="track-title">Nessuna traccia</div>
         <div id="track-artist">—</div>
 
-        <!-- Progress -->
         <div id="progress-wrap">
-          <div id="progress-bar-bg">
-            <div id="progress-bar-fill"></div>
-          </div>
+          <div id="progress-bar-bg"><div id="progress-bar-fill"></div></div>
           <div id="progress-times">
             <span id="time-current">0:00</span>
             <span id="time-total">0:00</span>
           </div>
         </div>
 
-        <!-- Controlli con icone SVG inline -->
         <div id="controls">
-
-          <!-- Precedente -->
-          <button class="ctrl-btn" id="btn-prev" type="button" aria-label="Brano precedente">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <button class="ctrl-btn" id="btn-prev" type="button" aria-label="Precedente">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M19 20L9 12l10-8v16Z" fill="#f0f0fa"/>
               <rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/>
             </svg>
           </button>
-
-          <!-- Play / Pausa -->
           <button id="play-btn" type="button" aria-label="Play/Pausa">
-            <svg id="play-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <svg id="play-icon" width="26" height="26" viewBox="0 0 24 24" fill="none">
               <path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>
             </svg>
           </button>
-
-          <!-- Successivo -->
-          <button class="ctrl-btn" id="btn-next" type="button" aria-label="Brano successivo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <button class="ctrl-btn" id="btn-next" type="button" aria-label="Successivo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M5 4l10 8-10 8V4Z" fill="#f0f0fa"/>
               <rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/>
             </svg>
           </button>
-
-        </div><!-- /controls -->
-
-        <!-- Volume -->
-        <div id="vol-wrap">
-          <!-- Icona volume SVG inline -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0">
-            <path d="M11 5L6 9H2v6h4l5 4V5Z" fill="#505870"/>
-            <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12" stroke="#505870" stroke-width="1.5"
-                  stroke-linecap="round"/>
-          </svg>
-          <input type="range" id="vol-slider" min="0" max="100" value="80" aria-label="Volume">
         </div>
 
-        <div id="media-status">Nessun media</div>
+        <div id="vol-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <path d="M11 5L6 9H2v6h4l5 4V5Z" fill="#505870"/>
+            <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12" stroke="#505870" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input type="range" id="vol-slider" min="0" max="100" value="80">
+        </div>
 
-      </div><!-- /music-info -->
+        <div id="media-status">Connetti Spotify per iniziare</div>
+      </div>
+
+      <!-- Badge Spotify -->
+      <div id="spotify-badge" title="Impostazioni Spotify">
+        <span id="spotify-dot"></span>
+        <span id="spotify-label">Spotify</span>
+      </div>
 
     </div><!-- /music-panel -->
-
   </div><!-- /main -->
-
 </div><!-- /app -->
 
-<!-- ════ LOCKSCREEN ════ -->
-<div id="lockscreen" role="button" aria-label="Tocca per sbloccare">
+<!-- ════ SETUP OVERLAY ════ -->
+<div id="setup-overlay" role="dialog" aria-label="Configurazione Spotify">
+  <div id="setup-card">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" fill="#1DB954"/>
+        <path d="M7 15c2.5-1 5.5-1.2 8 0M6.5 11.5c3-1.5 7-1.5 10 0M8 8c2.5-1 6-1 8.5.5" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Configura Spotify
+    </h2>
 
+    <div class="setup-divider"></div>
+
+    <p class="setup-step">
+      <b>1.</b> Vai su <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a><br>
+      <b>2.</b> Crea un'app → copia il <b>Client ID</b><br>
+      <b>3.</b> In "Edit Settings" aggiungi come Redirect URI:<br>
+      <code id="redirect-uri-display" style="font-size:10px;color:var(--accent2);word-break:break-all;"></code><br>
+      <b>4.</b> Salva e incolla il Client ID qui sotto
+    </p>
+
+    <div class="setup-divider"></div>
+
+    <div class="setup-field">
+      <span class="setup-label">Client ID</span>
+      <input class="setup-input" id="client-id-input" type="text"
+             placeholder="es. 4b3c1a2d..." autocomplete="off" spellcheck="false">
+      <span class="setup-hint">Trovalo nel tuo Spotify Developer Dashboard</span>
+    </div>
+
+    <button class="setup-btn" id="btn-spotify-login" type="button">Accedi con Spotify</button>
+    <button class="setup-btn" id="btn-setup-close"   type="button">Chiudi</button>
+  </div>
+</div>
+
+<!-- ════ LOCKSCREEN ════ -->
+<div id="lockscreen">
   <div id="ls-clock">
     <div id="ls-time">00:00</div>
     <div id="ls-date">—</div>
   </div>
-
   <div id="ls-music">
     <div id="ls-np-label">In riproduzione</div>
     <div id="ls-title">Nessuna traccia</div>
     <div id="ls-artist">—</div>
-
     <div id="ls-controls">
-
-      <!-- Prev lockscreen -->
-      <button class="ls-ctrl-btn" id="ls-prev" type="button" aria-label="Precedente">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <button class="ls-ctrl-btn" id="ls-prev" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M19 20L9 12l10-8v16Z" fill="rgba(255,255,255,.8)"/>
           <rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="rgba(255,255,255,.8)"/>
         </svg>
       </button>
-
-      <!-- Play lockscreen -->
-      <button id="ls-play-btn" type="button" aria-label="Play/Pausa">
-        <svg id="ls-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <button id="ls-play-btn" type="button">
+        <svg id="ls-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>
         </svg>
       </button>
-
-      <!-- Next lockscreen -->
-      <button class="ls-ctrl-btn" id="ls-next" type="button" aria-label="Successivo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <button class="ls-ctrl-btn" id="ls-next" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M5 4l10 8-10 8V4Z" fill="rgba(255,255,255,.8)"/>
           <rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="rgba(255,255,255,.8)"/>
         </svg>
       </button>
-
     </div>
-
     <div id="ls-hint">Tocca per tornare all'app</div>
   </div>
-
-</div><!-- /lockscreen -->
+</div>
 
 <script>
-/* ─────────────────────────────────────────────
+'use strict';
+
+/* ═══════════════════════════════════════
    CLOCK
-───────────────────────────────────────────── */
+═══════════════════════════════════════ */
 const DAYS   = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-const pad = n => String(n).padStart(2, '0');
+const pad = n => String(n).padStart(2,'0');
 
 function updateClock() {
   const now = new Date();
-  const h = pad(now.getHours());
-  const m = pad(now.getMinutes());
-  const s = pad(now.getSeconds());
-
+  const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
   document.getElementById('clock-time').textContent    = `${h}:${m}`;
   document.getElementById('clock-seconds').textContent = s;
   document.getElementById('ls-time').textContent       = `${h}:${m}`;
-
   const ds = `${DAYS[now.getDay()]} ${now.getDate()} ${MONTHS[now.getMonth()]}`;
   document.getElementById('clock-date').textContent = ds;
   document.getElementById('ls-date').textContent    = ds;
-
-  // Ring: secondi nel minuto corrente
-  const circ   = 213.6;
-  const offset = circ - (now.getSeconds() / 60) * circ;
-  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+  const circ = 213.6;
+  document.getElementById('ring-fill').style.strokeDashoffset = circ - (now.getSeconds()/60)*circ;
 }
-
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ─────────────────────────────────────────────
+/* ═══════════════════════════════════════
    WAKE LOCK
-───────────────────────────────────────────── */
+═══════════════════════════════════════ */
 let wakeLock = null;
 const awakeBtn  = document.getElementById('awake-btn');
 const awakeText = document.getElementById('awake-text');
 
 async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) {
-    awakeText.textContent = 'Non disponibile';
-    return;
-  }
+  if (!('wakeLock' in navigator)) { awakeText.textContent='Non disponibile'; return; }
   try {
     wakeLock = await navigator.wakeLock.request('screen');
     awakeBtn.classList.add('on');
     awakeText.textContent = 'Schermo ON';
     wakeLock.addEventListener('release', () => {
-      wakeLock = null;
-      awakeBtn.classList.remove('on');
-      awakeText.textContent = 'Schermo attivo';
+      wakeLock = null; awakeBtn.classList.remove('on'); awakeText.textContent='Schermo attivo';
     });
-  } catch (e) {
-    awakeText.textContent = 'Errore';
-  }
+  } catch(e) { awakeText.textContent='Errore'; }
 }
-
-async function releaseWakeLock() {
-  if (wakeLock) await wakeLock.release();
-}
-
-awakeBtn.addEventListener('click', () => {
-  wakeLock ? releaseWakeLock() : acquireWakeLock();
-});
-
-// Riacquisisce se la pagina torna in foreground e era attivo
+async function releaseWakeLock() { if (wakeLock) await wakeLock.release(); }
+awakeBtn.addEventListener('click', () => wakeLock ? releaseWakeLock() : acquireWakeLock());
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && awakeBtn.classList.contains('on') && !wakeLock) {
+  if (document.visibilityState==='visible' && awakeBtn.classList.contains('on') && !wakeLock)
     acquireWakeLock();
-  }
 });
 
-/* ─────────────────────────────────────────────
-   MEDIA SESSION
-───────────────────────────────────────────── */
-let isPlaying = false;
+/* ═══════════════════════════════════════
+   SPOTIFY AUTH (PKCE — no backend)
+═══════════════════════════════════════ */
+const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
+let spotifyToken  = null;
+let spotifyExpiry = 0;
+let pollTimer     = null;
+let progressTimer = null;
+let currentProgress = 0;
+let currentDuration = 0;
+let currentlyPlaying = false;
 
-const playIconEl   = document.getElementById('play-icon');
-const lsPlayIconEl = document.getElementById('ls-play-icon');
-const statusEl     = document.getElementById('media-status');
+// Redirect URI = pagina corrente (senza hash)
+const REDIRECT_URI = location.origin + location.pathname.replace(/\/[^/]*$/, '/') + 'index.html';
+document.getElementById('redirect-uri-display').textContent = REDIRECT_URI;
 
-// SVG paths
+// Legge client id salvato
+function getSavedClientId() { try { return localStorage.getItem('bw_client_id') || ''; } catch(e){ return ''; } }
+function saveClientId(id)   { try { localStorage.setItem('bw_client_id', id); } catch(e){} }
+
+// PKCE helpers
+async function sha256(plain) {
+  const enc = new TextEncoder().encode(plain);
+  return crypto.subtle.digest('SHA-256', enc);
+}
+function base64urlencode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function generateRandom(len=64) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return base64urlencode(arr);
+}
+
+async function startSpotifyLogin() {
+  const clientId = document.getElementById('client-id-input').value.trim();
+  if (!clientId) { alert('Inserisci il Client ID!'); return; }
+  saveClientId(clientId);
+
+  const verifier  = generateRandom(64);
+  const challenge = base64urlencode(await sha256(verifier));
+  try { sessionStorage.setItem('bw_verifier', verifier); } catch(e){}
+
+  const params = new URLSearchParams({
+    client_id:             clientId,
+    response_type:         'code',
+    redirect_uri:          REDIRECT_URI,
+    code_challenge_method: 'S256',
+    code_challenge:        challenge,
+    scope:                 SCOPES,
+  });
+  location.href = `https://accounts.spotify.com/authorize?${params}`;
+}
+
+async function exchangeCode(code) {
+  const clientId = getSavedClientId();
+  let verifier = '';
+  try { verifier = sessionStorage.getItem('bw_verifier') || ''; } catch(e){}
+  if (!clientId || !verifier) return;
+
+  const body = new URLSearchParams({
+    grant_type:    'authorization_code',
+    code,
+    redirect_uri:  REDIRECT_URI,
+    client_id:     clientId,
+    code_verifier: verifier,
+  });
+
+  try {
+    const res  = await fetch('https://accounts.spotify.com/api/token', { method:'POST', body });
+    const data = await res.json();
+    if (data.access_token) {
+      spotifyToken  = data.access_token;
+      spotifyExpiry = Date.now() + (data.expires_in - 60) * 1000;
+      try {
+        localStorage.setItem('bw_refresh', data.refresh_token);
+        localStorage.setItem('bw_expiry',  spotifyExpiry);
+      } catch(e){}
+      // Pulisce URL
+      history.replaceState({}, '', location.pathname);
+      onSpotifyLinked();
+    }
+  } catch(e) { console.error('Token exchange error', e); }
+}
+
+async function refreshAccessToken() {
+  const clientId      = getSavedClientId();
+  let refreshToken = '';
+  try { refreshToken = localStorage.getItem('bw_refresh') || ''; } catch(e){}
+  if (!clientId || !refreshToken) return false;
+
+  const body = new URLSearchParams({
+    grant_type:    'refresh_token',
+    refresh_token: refreshToken,
+    client_id:     clientId,
+  });
+  try {
+    const res  = await fetch('https://accounts.spotify.com/api/token', { method:'POST', body });
+    const data = await res.json();
+    if (data.access_token) {
+      spotifyToken  = data.access_token;
+      spotifyExpiry = Date.now() + (data.expires_in - 60) * 1000;
+      try { localStorage.setItem('bw_expiry', spotifyExpiry); } catch(e){}
+      if (data.refresh_token) {
+        try { localStorage.setItem('bw_refresh', data.refresh_token); } catch(e){}
+      }
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+async function getValidToken() {
+  if (spotifyToken && Date.now() < spotifyExpiry) return spotifyToken;
+  const ok = await refreshAccessToken();
+  return ok ? spotifyToken : null;
+}
+
+/* ═══════════════════════════════════════
+   SPOTIFY API CALLS
+═══════════════════════════════════════ */
+async function spotifyCall(path, method='GET', body=null) {
+  const token = await getValidToken();
+  if (!token) return null;
+  const opts = { method, headers: { Authorization:`Bearer ${token}` } };
+  if (body) { opts.body = JSON.stringify(body); opts.headers['Content-Type']='application/json'; }
+  try {
+    const res = await fetch(`https://api.spotify.com/v1${path}`, opts);
+    if (res.status === 204) return {};          // no content = OK
+    if (res.status === 401) { spotifyToken = null; return null; }
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+/* ═══════════════════════════════════════
+   UI UPDATE
+═══════════════════════════════════════ */
 const SVG_PLAY  = '<path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>';
-const SVG_PAUSE = '<rect x="5" y="4" width="4" height="16" rx="1.5" fill="#ffffff"/><rect x="15" y="4" width="4" height="16" rx="1.5" fill="#ffffff"/>';
-const SVG_PLAY_LS  = '<path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>';
-const SVG_PAUSE_LS = '<rect x="5" y="4" width="4" height="16" rx="1.5" fill="#ffffff"/><rect x="15" y="4" width="4" height="16" rx="1.5" fill="#ffffff"/>';
+const SVG_PAUSE = '<rect x="5" y="4" width="4" height="16" rx="1.5" fill="#fff"/><rect x="15" y="4" width="4" height="16" rx="1.5" fill="#fff"/>';
 
 function setPlayState(playing) {
-  isPlaying = playing;
-  playIconEl.innerHTML   = playing ? SVG_PAUSE    : SVG_PLAY;
-  lsPlayIconEl.innerHTML = playing ? SVG_PAUSE_LS : SVG_PLAY_LS;
+  currentlyPlaying = playing;
+  document.getElementById('play-icon').innerHTML   = playing ? SVG_PAUSE : SVG_PLAY;
+  document.getElementById('ls-play-icon').innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
 }
 
-function updateMediaInfo() {
-  if (!('mediaSession' in navigator)) {
-    statusEl.textContent = 'Media Session non supportata';
-    return;
-  }
+function fmtMs(ms) {
+  if (!ms || ms<0) return '0:00';
+  const s = Math.floor(ms/1000), m = Math.floor(s/60);
+  return `${m}:${pad(s%60)}`;
+}
 
-  const meta = navigator.mediaSession.metadata;
-  if (meta) {
-    document.getElementById('track-title').textContent  = meta.title  || 'Sconosciuto';
-    document.getElementById('track-artist').textContent = meta.artist || meta.album || '—';
-    document.getElementById('ls-title').textContent     = meta.title  || 'Sconosciuto';
-    document.getElementById('ls-artist').textContent    = meta.artist || meta.album || '—';
-    statusEl.textContent  = '● Media attivo';
-    statusEl.className    = 'ok';
-  } else {
+function updateProgress(progress, duration) {
+  currentProgress = progress;
+  currentDuration = duration;
+  const pct = duration>0 ? (progress/duration)*100 : 0;
+  document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+  document.getElementById('time-current').textContent = fmtMs(progress);
+  document.getElementById('time-total').textContent   = fmtMs(duration);
+}
+
+function startProgressTick() {
+  clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    if (currentlyPlaying && currentDuration>0) {
+      currentProgress = Math.min(currentProgress+1000, currentDuration);
+      updateProgress(currentProgress, currentDuration);
+    }
+  }, 1000);
+}
+
+function updateTrackUI(data) {
+  if (!data || !data.item) {
     document.getElementById('track-title').textContent  = 'Nessuna traccia';
     document.getElementById('track-artist').textContent = '—';
     document.getElementById('ls-title').textContent     = 'Nessuna traccia';
     document.getElementById('ls-artist').textContent    = '—';
-    statusEl.textContent = 'Nessun media';
-    statusEl.className   = '';
+    document.getElementById('media-status').textContent = '● Connesso — nessun brano';
+    document.getElementById('media-status').className   = 'ok';
+    setPlayState(false);
+    return;
   }
 
-  const ps = navigator.mediaSession.playbackState;
-  if      (ps === 'playing') setPlayState(true);
-  else if (ps === 'paused')  setPlayState(false);
+  const item   = data.item;
+  const title  = item.name || '—';
+  const artist = (item.artists||[]).map(a=>a.name).join(', ') || '—';
+  const img    = item.album?.images?.[0]?.url || null;
+  const prog   = data.progress_ms || 0;
+  const dur    = item.duration_ms || 0;
+  const play   = data.is_playing || false;
+
+  document.getElementById('track-title').textContent  = title;
+  document.getElementById('track-artist').textContent = artist;
+  document.getElementById('ls-title').textContent     = title;
+  document.getElementById('ls-artist').textContent    = artist;
+
+  // Copertina
+  const artImg = document.getElementById('art-img');
+  const artSvg = document.getElementById('art-icon-svg');
+  if (img) {
+    artImg.src     = img;
+    artImg.style.display = 'block';
+    artSvg.style.display = 'none';
+  } else {
+    artImg.style.display = 'none';
+    artSvg.style.display = 'flex';
+  }
+
+  updateProgress(prog, dur);
+  setPlayState(play);
+  if (play) startProgressTick();
+  else clearInterval(progressTimer);
+
+  document.getElementById('media-status').textContent = `● ${play?'In riproduzione':'In pausa'}`;
+  document.getElementById('media-status').className   = 'ok';
 }
 
-setInterval(updateMediaInfo, 2000);
-updateMediaInfo();
-
-function doAction(action) {
-  try { navigator.mediaSession?.callActionHandler?.(action); } catch(_) {}
+/* ═══════════════════════════════════════
+   POLLING SPOTIFY
+═══════════════════════════════════════ */
+async function pollPlayback() {
+  const data = await spotifyCall('/me/player');
+  if (data !== null) updateTrackUI(data);
 }
 
-document.getElementById('play-btn').addEventListener('click', () => {
-  if (isPlaying) doAction('pause'); else doAction('play');
-  setPlayState(!isPlaying);
+function startPolling() {
+  clearInterval(pollTimer);
+  pollPlayback();
+  pollTimer = setInterval(pollPlayback, 5000);  // ogni 5 secondi
+}
+
+function onSpotifyLinked() {
+  document.getElementById('spotify-badge').classList.add('linked');
+  document.getElementById('spotify-label').textContent = 'Spotify ✓';
+  document.getElementById('setup-overlay').classList.remove('show');
+  startPolling();
+}
+
+/* ═══════════════════════════════════════
+   CONTROLLI PLAYER
+═══════════════════════════════════════ */
+document.getElementById('play-btn').addEventListener('click', async () => {
+  const action = currentlyPlaying ? '/me/player/pause' : '/me/player/play';
+  await spotifyCall(action, 'PUT');
+  setPlayState(!currentlyPlaying);
+  if (!currentlyPlaying) startProgressTick();
+  else clearInterval(progressTimer);
+  setTimeout(pollPlayback, 800);
 });
 
-document.getElementById('btn-prev').addEventListener('click', () => doAction('previoustrack'));
-document.getElementById('btn-next').addEventListener('click', () => doAction('nexttrack'));
+document.getElementById('btn-prev').addEventListener('click', async () => {
+  await spotifyCall('/me/player/previous', 'POST');
+  setTimeout(pollPlayback, 800);
+});
 
-// Lockscreen controls
+document.getElementById('btn-next').addEventListener('click', async () => {
+  await spotifyCall('/me/player/next', 'POST');
+  setTimeout(pollPlayback, 800);
+});
+
+// Volume
+document.getElementById('vol-slider').addEventListener('change', async e => {
+  await spotifyCall(`/me/player/volume?volume_percent=${e.target.value}`, 'PUT');
+});
+
+// Mirror su lockscreen
 document.getElementById('ls-play-btn').addEventListener('click', e => {
-  e.stopPropagation();
-  document.getElementById('play-btn').click();
+  e.stopPropagation(); document.getElementById('play-btn').click();
 });
 document.getElementById('ls-prev').addEventListener('click', e => {
-  e.stopPropagation();
-  document.getElementById('btn-prev').click();
+  e.stopPropagation(); document.getElementById('btn-prev').click();
 });
 document.getElementById('ls-next').addEventListener('click', e => {
-  e.stopPropagation();
-  document.getElementById('btn-next').click();
+  e.stopPropagation(); document.getElementById('btn-next').click();
 });
 
-// Volume (agisce sugli elementi <audio>/<video> della pagina)
-document.getElementById('vol-slider').addEventListener('input', e => {
-  const v = e.target.value / 100;
-  document.querySelectorAll('audio, video').forEach(el => el.volume = v);
-});
+/* ═══════════════════════════════════════
+   SETUP OVERLAY
+═══════════════════════════════════════ */
+const setupOverlay = document.getElementById('setup-overlay');
 
-/* ─────────────────────────────────────────────
-   LOCKSCREEN TOGGLE
-───────────────────────────────────────────── */
+document.getElementById('spotify-badge').addEventListener('click', () => {
+  document.getElementById('client-id-input').value = getSavedClientId();
+  setupOverlay.classList.add('show');
+});
+document.getElementById('btn-setup-close').addEventListener('click', () => setupOverlay.classList.remove('show'));
+document.getElementById('btn-spotify-login').addEventListener('click', startSpotifyLogin);
+setupOverlay.addEventListener('click', e => { if (e.target===setupOverlay) setupOverlay.classList.remove('show'); });
+
+/* ═══════════════════════════════════════
+   LOCKSCREEN
+═══════════════════════════════════════ */
 const lockscreen = document.getElementById('lockscreen');
-
 document.getElementById('lockmode-toggle').addEventListener('change', e => {
   lockscreen.classList.toggle('show', e.target.checked);
 });
-
 lockscreen.addEventListener('click', () => {
   lockscreen.classList.remove('show');
   document.getElementById('lockmode-toggle').checked = false;
 });
+lockscreen.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
 
-lockscreen.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+/* ═══════════════════════════════════════
+   INIT — gestisce callback OAuth
+═══════════════════════════════════════ */
+(async function init() {
+  // Precompila client id se salvato
+  const saved = getSavedClientId();
+  if (saved) document.getElementById('client-id-input').value = saved;
 
-/* ─────────────────────────────────────────────
-   SERVICE WORKER (offline support)
-───────────────────────────────────────────── */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+  // Controlla se siamo tornati dal redirect Spotify
+  const params = new URLSearchParams(location.search);
+  const code   = params.get('code');
+  if (code) {
+    await exchangeCode(code);
+    return;
+  }
+
+  // Prova a usare refresh token già salvato
+  let expiry = 0;
+  try { expiry = parseInt(localStorage.getItem('bw_expiry')||'0'); } catch(e){}
+  let refresh = '';
+  try { refresh = localStorage.getItem('bw_refresh')||''; } catch(e){}
+
+  if (refresh && saved) {
+    const ok = await refreshAccessToken();
+    if (ok) { onSpotifyLinked(); return; }
+  }
+
+  // Nessun token: mostra subito il setup se non c'è client id
+  if (!saved) {
+    setupOverlay.classList.add('show');
+  }
+})();
+
+/* ═══════════════════════════════════════
+   SERVICE WORKER
+═══════════════════════════════════════ */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
