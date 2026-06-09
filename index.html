@@ -779,56 +779,73 @@ function onSpotifyLinked() {
 }
 
 /* ── LOGICA CARICAMENTO ASCOLTI RECENTI (Playlist o singola canzone) ── */
+/* ── CARICAMENTO DEGLI ASCOLTI RECENTI (Playlist e Album ascoltati di recente) ── */
 async function loadPlaylists() {
   const container = document.getElementById('playlist-list');
-  container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text2); font-size:13px; grid-column:1/-1;">Caricamento contenuti...</div>';
+  container.innerHTML = '<div style="text-align:center; padding:40px; color:#b3b3b3; font-size:14px; grid-column:1/-1;">Caricamento...</div>';
 
-  // Carica la cronologia di ascolto recente (brani, playlist, o album)
-  const recentData = await spotifyCall('/me/player/recently-played?limit=20');
+  // Recupera la cronologia degli ascolti recenti
+  const data = await spotifyCall('/me/player/recently-played?limit=20');
 
   container.innerHTML = '';
 
-  if (recentData && recentData.items && recentData.items.length > 0) {
-    const seenUris = new Set();
+  if (data && data.items) {
+    const processedUris = new Set();
 
-    for (const item of recentData.items) {
-      // Prioritizza il contesto (playlist/album) se esiste, altrimenti usa il brano singolo
-      let targetUri = item.context?.uri || item.track?.album?.uri || item.track?.uri;
-      if (!targetUri || seenUris.has(targetUri)) continue;
-      seenUris.add(targetUri);
+    for (const item of data.items) {
+      if (!item || !item.track) continue;
+      
+      let uri = null;
+      let name = '';
+      let typeLabel = '';
+      let imgUrl = '';
 
-      let title = 'Traccia recente';
-      let subtitle = 'Brano';
-      let imgUrl = item.track?.album?.images?.[0]?.url || '';
-
-      if (item.context && item.context.type === 'playlist') {
-        // Tenta di recuperare il nome della playlist tramite chiamata dedicata se disponibile, altrimenti usa fallback
-        title = 'Playlist Recente';
-        subtitle = 'Playlist';
-      } else if (item.context && item.context.type === 'album') {
-        title = item.track?.album?.name || 'Album Recente';
-        subtitle = 'Album';
-      } else if (item.track) {
-        title = item.track.name;
-        subtitle = item.track.artists?.[0]?.name || 'Brano';
+      // Controlla se il brano è stato riprodotto all'interno di una playlist o di un album
+      if (item.context && (item.context.type === 'playlist' || item.context.type === 'album')) {
+        uri = item.context.uri;
+      } else if (item.track.album && item.track.album.uri) {
+        uri = item.track.album.uri;
       }
+
+      if (!uri || processedUris.has(uri)) continue;
+      processedUris.add(uri);
+
+      // Estrae il tipo e l'ID dall'URI (es. spotify:playlist:ID oppure spotify:album:ID)
+      const parts = uri.split(':');
+      const type = parts[1]; // 'playlist' o 'album'
+      const id = parts[2];
+
+      if (type === 'playlist') {
+        const pData = await spotifyCall(`/playlists/${id}`);
+        if (pData) {
+          name = pData.name || 'Playlist';
+          imgUrl = pData.images?.[0]?.url || '';
+          typeLabel = 'PLAYLIST';
+        }
+      } else if (type === 'album') {
+        const aData = await spotifyCall(`/albums/${id}`);
+        if (aData) {
+          name = aData.name || 'Album';
+          imgUrl = aData.images?.[0]?.url || '';
+          typeLabel = 'ALBUM';
+        }
+      }
+
+      if (!name) continue;
 
       const itemDiv = document.createElement('div');
       itemDiv.className = 'playlist-item';
       itemDiv.innerHTML = `
-        <img class="playlist-img" src="${imgUrl}" alt="Cover">
+        <img class="playlist-img" src="${imgUrl}" alt="">
         <div class="playlist-info">
-          <span class="playlist-name">${title}</span>
-          <span class="playlist-tracks">${subtitle}</span>
+          <span class="playlist-name">${name}</span>
+          <span class="playlist-tracks">${typeLabel}</span>
         </div>
       `;
       
       itemDiv.addEventListener('click', async () => {
-        if (item.context && (item.context.type === 'playlist' || item.context.type === 'album')) {
-          await spotifyCall('/me/player/play', 'PUT', { context_uri: targetUri });
-        } else {
-          await spotifyCall('/me/player/play', 'PUT', { uris: [targetUri] });
-        }
+        // Avvia la riproduzione in base al contesto (playlist o album)
+        await spotifyCall('/me/player/play', 'PUT', { context_uri: uri });
         document.getElementById('playlist-overlay').classList.remove('show');
         setTimeout(pollPlayback, 500);
       });
@@ -838,7 +855,7 @@ async function loadPlaylists() {
   }
 
   if (container.children.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--muted); font-size:12px; grid-column:1/-1;">Nessun ascolto recente trovato.</div>';
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#b3b3b3; font-size:14px; grid-column:1/-1;">Nessun ascolto recente trovato.</div>';
   }
 }
 
