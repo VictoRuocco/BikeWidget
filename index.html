@@ -77,7 +77,7 @@ html,body {
 .tog input:checked ~ .tog-thumb { transform:translateX(14px); background:var(--accent); }
 
 /* ── MAIN LAYOUT ── */
-#main { display:flex; flex:1; height:calc(100vh - var(--topbar-h)); overflow:hidden; align-items:center; }
+#main { display:flex; flex:1; height:calc(100vh - var(--topbar-h)); overflow:hidden; }
 
 /* COLONNA SINISTRA (Orologio + Meteo) */
 #left-col {
@@ -136,8 +136,8 @@ html,body {
 
 /* COLONNA DESTRA (Player Spotify) */
 #music-panel {
-  width:58%; height:calc(100% - 4.5vh); display:flex; flex-direction:row; align-items:center; padding:3vh 3vw; gap:3vw;
-  background:var(--bg); overflow:hidden; position:relative; flex-shrink:0;
+  width:58%; height:100%; display:flex; flex-direction:row; align-items:center; padding:3vh 3vw; gap:3vw;
+  background:var(--bg); overflow:hidden; position:relative;
 }
 #art-wrap {
   width:calc(75px + 9vw); height:calc(75px + 9vw); max-width:160px; max-height:160px; flex-shrink:0;
@@ -182,7 +182,7 @@ html,body {
 #spotify-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); }
 #spotify-badge.linked #spotify-dot { background:var(--spotify); }
 
-/* ── PANNELLO DELLE PLAYLIST ── */
+/* ── PANNELLO DELLE PLAYLIST (Novità) ── */
 #playlist-overlay {
   display:none; position:fixed; inset:0; z-index:250; background:rgba(0,0,0,.8); backdrop-filter:blur(8px); align-items:center; justify-content:center;
 }
@@ -228,11 +228,20 @@ html,body {
 
 /* ── LOCKSCREEN OVERLAY ── */
 #lockscreen {
-  display:none; position:fixed; inset:0; background:#000; z-index:200; flex-direction:row; align-items:center; justify-content:center; gap:8vw; cursor:pointer;
+  display:none; position:fixed; inset:0; background:#000; z-index:200; align-items:center; justify-content:center; cursor:pointer;
 }
-#lockscreen.show { display:flex; }
+#lockscreen.show { 
+  display:grid; 
+  grid-template-columns: 42% 58%;
+  padding: 3vh 3vw;
+  gap: 3vw;
+}
 
-#ls-clock { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2vh; }
+#ls-clock { 
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5vh; 
+  background:rgba(255,255,255,0.02); border-radius:24px; border:1px solid rgba(255,255,255,0.05);
+  padding: 3vh 2vw; height: 100%; box-sizing: border-box;
+}
 #ls-samsung-time-wrap {
   display:flex; align-items:center; justify-content:center; font-family:'Oswald', sans-serif;
   font-size:calc(66px + 7.5vw); line-height:0.85; letter-spacing:-0.02em; font-variant-numeric: tabular-nums;
@@ -251,17 +260,36 @@ html,body {
 #ls-wx-icon-holder svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 #ls-wx-temp { font-family:'Oswald', sans-serif; font-size:calc(22px + 2vw); font-weight:300; color:#fff; line-height:1; }
 
-#ls-music {
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
-  border-radius:24px; padding:3vh 3vw; width:calc(180px + 12vw); display:flex; flex-direction:column; gap:1.5vh;
+#ls-wx-hourly-alert {
+  display:flex; border-top:1px solid rgba(255,255,255,0.1); padding-top:1vh; justify-content:space-around; align-items:center; width:100%; margin-top:0.5vh;
 }
-#ls-title    { font-size:calc(13px + 0.5vw); font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#ls-artist   { font-size:calc(11px + 0.2vw); color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#ls-controls { display:flex; justify-content:center; align-items:center; gap:4vw; }
-.ls-ctrl-btn { width:42px; height:42px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-#ls-play-btn { width:52px; height:52px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-#ls-play-btn svg { transform:translateX(1px); }
-#ls-hint { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; }
+.ls-hr-forecast { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.04); padding:4px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.05); }
+.ls-hr-time { font-size:9px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; }
+.ls-hr-icon { width:16px; height:16px; color:rgba(255,255,255,0.6); display:flex; align-items:center; }
+.ls-hr-icon svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.8; }
+.ls-hr-pop  { font-size:calc(10px + 0.2vw); font-weight:600; color:rgba(255,255,255,0.6); font-variant-numeric:tabular-nums; }
+.ls-hr-pop.rainy { color:var(--accent2); }
+
+#ls-music {
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.05);
+  border-radius:24px; padding:3vh 3vw; display:flex; flex-direction:column; justify-content:center; gap:2vh; height:100%; box-sizing: border-box;
+}
+#ls-title    { font-size:calc(16px + 0.6vw); font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-artist   { font-size:calc(12px + 0.3vw); color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-controls { display:flex; align-items:center; gap:2vw; }
+.ls-ctrl-btn { 
+  width:calc(36px + 1.5vw); height:calc(36px + 1.5vw); max-width:48px; max-height:48px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:50%; 
+  display:flex; align-items:center; justify-content:center; 
+}
+.ls-ctrl-btn svg { width:45%; height:45%; }
+#ls-play-btn { 
+  width:calc(44px + 2vw); height:calc(44px + 2vw); max-width:58px; max-height:58px;
+  background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.2); border-radius:50%; 
+  display:flex; align-items:center; justify-content:center; 
+}
+#ls-play-btn svg { width:45%; height:45%; transform:translateX(1px); }
+#ls-hint { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; margin-top: 1vh; }
 </style>
 </head>
 <body>
@@ -396,11 +424,11 @@ html,body {
 <div id="playlist-overlay">
   <div id="playlist-card">
     <div id="playlist-header">
-      <h3>Ultime Tracce Ascoltate</h3>
+      <h3>Le Tue Playlist Preferite</h3>
       <button id="btn-playlist-close" type="button">×</button>
     </div>
     <div id="playlist-list">
-      <div style="text-align:center; padding:40px; color:var(--text2); font-size:13px;">Caricamento tracce recenti...</div>
+      <div style="text-align:center; padding:40px; color:var(--text2); font-size:13px;">Caricamento playlist...</div>
     </div>
   </div>
 </div>
@@ -426,16 +454,32 @@ html,body {
       <span class="ls-time-mins" id="ls-txt-mins">00</span>
     </div>
     <div id="ls-date">—</div>
+    
     <div id="ls-weather">
       <div id="ls-wx-icon-holder">
         <svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>
       </div>
       <div id="ls-wx-temp">—</div>
     </div>
+
+    <div id="ls-wx-hourly-alert">
+      <div class="ls-hr-forecast">
+        <span class="ls-hr-time">+1h</span>
+        <div class="ls-hr-icon" id="ls-hr1-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></svg></div>
+        <span class="ls-hr-pop" id="ls-hr1-pop">--%</span>
+      </div>
+      <div class="ls-hr-forecast">
+        <span class="ls-hr-time">+2h</span>
+        <div class="ls-hr-icon" id="ls-hr2-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></svg></div>
+        <span class="ls-hr-pop" id="ls-hr2-pop">--%</span>
+      </div>
+    </div>
   </div>
+
   <div id="ls-music">
     <div id="ls-title">Nessuna traccia</div>
     <div id="ls-artist">—</div>
+    
     <div id="ls-controls">
       <button class="ls-ctrl-btn" id="ls-prev" type="button">
         <svg viewBox="0 0 24 24" fill="none"><path d="M19 20L9 12l10-8v16Z" fill="#fff"/><rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#fff"/></svg>
@@ -445,6 +489,9 @@ html,body {
       </button>
       <button class="ls-ctrl-btn" id="ls-next" type="button">
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 4l10 8-10 8V4Z" fill="#fff"/><rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="#fff"/></svg>
+      </button>
+      <button class="ls-ctrl-btn" id="ls-playlists-open" type="button" title="Le mie playlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
       </button>
     </div>
     <div id="ls-hint">Tocca per sbloccare</div>
@@ -546,12 +593,20 @@ async function loadWeather() {
       document.getElementById('hr1-icon').innerHTML = SVG_ICONS[WX_MAPPING[code1h] || 'clear'];
       document.getElementById('hr1-pop').textContent = `${pop1h}%`;
       document.getElementById('hr1-pop').className = pop1h > 20 ? "hr-pop rainy" : "hr-pop";
+      
+      document.getElementById('ls-hr1-icon').innerHTML = SVG_ICONS[WX_MAPPING[code1h] || 'clear'];
+      document.getElementById('ls-hr1-pop').textContent = `${pop1h}%`;
+      document.getElementById('ls-hr1-pop').className = pop1h > 20 ? "ls-hr-pop rainy" : "ls-hr-pop";
 
       const code2h = data.hourly.weathercode[currentHourIndex + 2] || 0;
       const pop2h  = data.hourly.precipitation_probability[currentHourIndex + 2] ?? 0;
       document.getElementById('hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
       document.getElementById('hr2-pop').textContent = `${pop2h}%`;
       document.getElementById('hr2-pop').className = pop2h > 20 ? "hr-pop rainy" : "hr-pop";
+      
+      document.getElementById('ls-hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
+      document.getElementById('ls-hr2-pop').textContent = `${pop2h}%`;
+      document.getElementById('ls-hr2-pop').className = pop2h > 20 ? "ls-hr-pop rainy" : "ls-hr-pop";
     } catch(e) { document.getElementById('wx-desc').textContent = 'Errore dati meteo'; }
   }, () => { document.getElementById('wx-desc').textContent = 'Segnale GPS assente'; });
 }
@@ -676,45 +731,45 @@ function onSpotifyLinked() {
   document.getElementById('spotify-badge').classList.add('linked');
   document.getElementById('spotify-label').textContent='Spotify ✓';
   document.getElementById('setup-overlay').classList.remove('show');
-  startPolling(); loadPlaylists(); // Carica le tracce recenti subito dopo l'autenticazione
+  startPolling(); loadPlaylists();
 }
 
-/* ── LOGICA RECUPERO ULTIME TRACCE ASCOLTATE ── */
+/* ── LOGICA RECUPERO E AVVIO PLAYLIST (Novità) ── */
 async function loadPlaylists() {
-  const data = await spotifyCall('/me/player/recently-played?limit=20');
+  const data = await spotifyCall('/me/playlists?limit=20');
   const container = document.getElementById('playlist-list');
   if (!data || !data.items || data.items.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--muted); font-size:12px;">Nessuna traccia recente trovata.</div>';
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--muted); font-size:12px;">Nessuna playlist trovata.</div>';
     return;
   }
   container.innerHTML = '';
-  data.items.forEach(item => {
-    if (!item || !item.track) return;
-    const track = item.track;
-    const imgUrl = track.album?.images?.[2]?.url || track.album?.images?.[0]?.url || '';
-    const trackDiv = document.createElement('div');
-    trackDiv.className = 'playlist-item';
-    trackDiv.innerHTML = `
+  data.items.forEach(pl => {
+    if (!pl) return;
+    const imgUrl = pl.images?.[0]?.url || '';
+    const item = document.createElement('div');
+    item.className = 'playlist-item';
+    item.innerHTML = `
       <img class="playlist-img" src="${imgUrl}" alt="Cover">
       <div class="playlist-info">
-        <span class="playlist-name">${track.name}</span>
-        <span class="playlist-tracks">${(track.artists || []).map(a => a.name).join(', ')}</span>
+        <span class="playlist-name">${pl.name}</span>
+        <span class="playlist-tracks">${pl.tracks?.total || 0} brani</span>
       </div>
     `;
-    trackDiv.addEventListener('click', async () => {
-      // Avvia la riproduzione del brano cliccato
-      await spotifyCall('/me/player/play', 'PUT', { uris: [track.uri] });
+    item.addEventListener('click', async () => {
+      await spotifyCall('/me/player/play', 'PUT', { context_uri: pl.uri });
       document.getElementById('playlist-overlay').classList.remove('show');
       setTimeout(pollPlayback, 500);
     });
-    container.appendChild(trackDiv);
+    container.appendChild(item);
   });
 }
 
 /* ── INTERFACCE, COMPORTAMENTI E BOTTONI ── */
 document.getElementById('play-btn').addEventListener('click', async () => {
-  const act=currentlyPlaying?'/me/player/pause':'/me/player/play';
-  await spotifyCall(act,'PUT'); setPlayState(!currentlyPlaying); setTimeout(pollPlayback,400);
+  const act = currentlyPlaying ? '/me/player/pause' : '/me/player/play';
+  await spotifyCall(act, 'PUT', currentlyPlaying ? null : {}); 
+  setPlayState(!currentlyPlaying); 
+  setTimeout(pollPlayback, 400);
 });
 document.getElementById('btn-prev').addEventListener('click', async () => { await spotifyCall('/me/player/previous','POST'); setTimeout(pollPlayback,500); });
 document.getElementById('btn-next').addEventListener('click', async () => { await spotifyCall('/me/player/next','POST'); setTimeout(pollPlayback,500); });
@@ -722,6 +777,7 @@ document.getElementById('btn-next').addEventListener('click', async () => { awai
 document.getElementById('ls-play-btn').addEventListener('click', e=>{ e.stopPropagation(); document.getElementById('play-btn').click(); });
 document.getElementById('ls-prev').addEventListener('click',     e=>{ e.stopPropagation(); document.getElementById('btn-prev').click(); });
 document.getElementById('ls-next').addEventListener('click',     e=>{ e.stopPropagation(); document.getElementById('btn-next').click(); });
+document.getElementById('ls-playlists-open').addEventListener('click', e=>{ e.stopPropagation(); document.getElementById('btn-playlists-open').click(); });
 
 // Gestione Finestra Playlist
 const playlistOverlay = document.getElementById('playlist-overlay');
