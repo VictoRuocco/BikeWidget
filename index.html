@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,223 +20,204 @@
   --bg:#0a0a12; --surf:#12121e; --surf2:#1e1e2e; --surf3:#252538;
   --accent:#4f8ef7; --accent2:#93c5fd;
   --text:#f0f0fa; --text2:#a0a8c0; --muted:#505870;
-  --border:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.08);
   --green:#34d399; --amber:#d4a843; --red:#f87171;
   --spotify:#1DB954;
-  --topbar-h:32px;
+  --topbar-h:6vh;
 }
 html,body {
   width:100%; height:100%; background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Roboto',sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sans-serif;
   overflow:hidden; touch-action:none;
 }
 
-/* ── APP ── */
+/* ── APP RESPONSIVE CONTAINER ── */
 #app { display:flex; flex-direction:column; height:100vh; width:100vw; }
 
 /* ── TOPBAR ── */
 #topbar {
   height:var(--topbar-h); display:flex; align-items:center;
-  justify-content:space-between; padding:0 12px;
+  justify-content:space-between; padding:0 2vw;
   background:var(--surf); border-bottom:1px solid var(--border); flex-shrink:0;
 }
-#logo { font-size:10px; font-weight:700; letter-spacing:.2em; color:var(--accent2); text-transform:uppercase; }
-.tog-wrap { display:flex; align-items:center; gap:7px; }
-.tog-label { font-size:9px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
-.tog { position:relative; width:36px; height:18px; cursor:pointer; }
+#logo { font-size:calc(10px + 0.3vw); font-weight:700; letter-spacing:.15em; color:var(--accent2); text-transform:uppercase; }
+.tog-wrap { display:flex; align-items:center; gap:8px; }
+.tog-label { font-size:calc(9px + 0.2vw); color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+.tog { position:relative; width:40px; height:20px; cursor:pointer; }
 .tog input { opacity:0; width:0; height:0; }
-.tog-track { position:absolute; inset:0; background:var(--surf3); border-radius:9px; border:1px solid var(--border); transition:background .2s; }
-.tog-thumb { position:absolute; width:12px; height:12px; left:3px; top:3px; background:var(--muted); border-radius:50%; transition:transform .2s,background .2s; }
+.tog-track { position:absolute; inset:0; background:var(--surf3); border-radius:10px; border:1px solid var(--border); transition:background .2s; }
+.tog-thumb { position:absolute; width:14px; height:14px; left:2px; top:2px; background:var(--muted); border-radius:50%; transition:transform .2s,background .2s; }
 .tog input:checked ~ .tog-track { background:#1a3060; }
-.tog input:checked ~ .tog-thumb { transform:translateX(18px); background:var(--accent); }
+.tog input:checked ~ .tog-thumb { transform:translateX(20px); background:var(--accent); }
 
-/* ── MAIN: due colonne ── */
+/* ── MAIN LAYOUT ── */
 #main {
   display:flex; flex:1;
   height:calc(100vh - var(--topbar-h));
-  overflow:hidden; gap:0;
+  overflow:hidden;
 }
 
 /* ══════════════════════════════════════
-   COLONNA SINISTRA  40%
-   Disposta su due righe: Orologio (top) e Meteo (bottom)
+   COLONNA SINISTRA (Orologio + Meteo) - 42%
 ══════════════════════════════════════ */
 #left-col {
-  width:40%; height:100%;
+  width:42%; height:100%;
   display:flex; flex-direction:column;
   background:var(--surf);
   border-right:1px solid var(--border);
-  padding:8px; gap:8px;
+  padding:1.5vh 1.5vw; gap:1.5vh;
 }
 
 /* Pannello orologio (Riga 1) */
 #clock-panel {
-  flex:1; display:flex; flex-direction:column;
+  flex:1.2; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  background:var(--surf2); border-radius:12px;
+  background:var(--surf2); border-radius:16px;
   border:1px solid var(--border);
-  padding:12px; gap:8px;
+  padding:1.5vh; gap:1vh;
 }
-#clock-hm { display:flex; align-items:flex-end; gap:2px; line-height:1; }
+#clock-hm { display:flex; align-items:flex-end; gap:2px; line-height:0.9; }
 #clock-time {
-  font-size:clamp(32px,8vw,64px); font-weight:100;
-  letter-spacing:-.04em; color:var(--text);
+  font-size:calc(32px + 3.5vw); font-weight:200;
+  letter-spacing:-.03em; color:var(--text);
   font-variant-numeric:tabular-nums;
 }
-#clock-colon-sec { display:flex; align-items:flex-end; padding-bottom:4px; gap:1px; }
-#clock-colon { font-size:clamp(16px,3.5vw,28px); font-weight:300; color:var(--accent); line-height:1; }
-#clock-seconds { font-size:clamp(16px,3.5vw,28px); font-weight:300; color:var(--accent); font-variant-numeric:tabular-nums; }
-#clock-date { font-size:clamp(9px,1.4vw,13px); color:var(--text2); letter-spacing:.08em; text-transform:uppercase; }
-#ring-wrap { position:relative; width:clamp(40px,7vw,60px); height:clamp(40px,7vw,60px); }
+#clock-colon-sec { display:flex; align-items:flex-end; padding-bottom:0.8vh; gap:1px; }
+#clock-colon { font-size:calc(16px + 1.2vw); font-weight:300; color:var(--accent); line-height:1; }
+#clock-seconds { font-size:calc(16px + 1.2vw); font-weight:300; color:var(--accent); font-variant-numeric:tabular-nums; }
+#clock-date { font-size:calc(10px + 0.4vw); color:var(--text2); letter-spacing:.08em; text-transform:uppercase; text-align:center; }
+
+#ring-wrap { position:relative; width:calc(35px + 2.5vh); height:calc(35px + 2.5vh); margin:0.5vh 0; }
 #ring-wrap svg { width:100%; height:100%; transform:rotate(-90deg); }
 #ring-bg   { stroke:var(--surf3); }
 #ring-fill { stroke:var(--accent); stroke-linecap:round; stroke-dasharray:213.6; stroke-dashoffset:213.6; transition:stroke-dashoffset .9s linear; }
-#ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--accent2); font-variant-numeric:tabular-nums; }
+#ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:calc(8px + 0.2vw); color:var(--accent2); font-variant-numeric:tabular-nums; }
+
 #awake-btn {
   display:flex; align-items:center; gap:6px;
   background:var(--surf3); border:1px solid var(--border);
-  border-radius:14px; padding:4px 12px;
-  font-size:10px; color:var(--text2); cursor:pointer;
-  transition:border-color .2s,color .2s;
+  border-radius:20px; padding:0.6vh 2vw;
+  font-size:calc(9px + 0.3vw); color:var(--text2); cursor:pointer;
 }
 #awake-btn.on { border-color:var(--green); color:var(--green); }
-#awake-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); transition:background .2s; flex-shrink:0; }
+#awake-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; }
 #awake-btn.on #awake-dot { background:var(--green); }
 
 /* Pannello meteo (Riga 2) */
 #weather-panel {
   flex:1; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  background:var(--surf2); border-radius:12px;
+  background:var(--surf2); border-radius:16px;
   border:1px solid var(--border);
-  padding:12px; gap:6px;
+  padding:1.5vh; gap:1vh;
+  position:relative; overflow:hidden;
 }
-#wx-label { font-size:9px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
-#wx-icon  { font-size:clamp(26px,6vw,44px); line-height:1; }
-#wx-temp  { font-size:clamp(26px,6vw,44px); font-weight:100; color:var(--text); line-height:1; }
-#wx-desc  { font-size:clamp(9px,1.4vw,12px); color:var(--text2); text-align:center; line-height:1.3; }
+#wx-label { font-size:calc(9px + 0.2vw); letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
+#wx-info-row { display:flex; align-items:center; justify-content:center; gap:2vw; width:100%; }
+#wx-icon-holder { width:calc(32px + 3.5vh); height:calc(32px + 3.5vh); display:flex; align-items:center; justify-content:center; color:var(--text); }
+#wx-icon-holder svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+#wx-temp  { font-size:calc(28px + 2.5vw); font-weight:200; color:var(--text); line-height:1; font-variant-numeric:tabular-nums; }
+#wx-desc  { font-size:calc(10px + 0.4vw); color:var(--text2); text-align:center; line-height:1.2; width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* ══════════════════════════════════════
-   COLONNA DESTRA  60% — player Spotify
+   COLONNA DESTRA (Player Spotify) - 58%
 ══════════════════════════════════════ */
 #music-panel {
-  flex:1; height:100%; display:flex; flex-direction:row;
-  align-items:center; padding:10px 14px; gap:14px;
+  width:58%; height:100%; display:flex; flex-direction:row;
+  align-items:center; padding:3vh 3vw; gap:3vw;
   background:var(--bg); overflow:hidden; position:relative;
 }
 #art-wrap {
-  width:clamp(80px,16vw,130px); height:clamp(80px,16vw,130px); flex-shrink:0;
-  background:var(--surf2); border:1px solid var(--border); border-radius:12px;
+  width:calc(75px + 9vw); height:calc(75px + 9vw); max-width:160px; max-height:160px; flex-shrink:0;
+  background:var(--surf2); border:1px solid var(--border); border-radius:16px;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
 #art-img { width:100%; height:100%; object-fit:cover; display:none; }
-#art-icon-svg { display:flex; }
+#art-icon-svg { display:flex; width:40%; height:40%; }
 
-#music-info { flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; overflow:hidden; min-width:0; }
-#np-label    { font-size:9px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
-#track-title { font-size:clamp(13px,2.6vw,19px); font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#track-artist{ font-size:clamp(10px,1.8vw,14px); color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#music-info { flex:1; display:flex; flex-direction:column; justify-content:center; gap:1.5vh; min-width:0; }
+#np-label    { font-size:calc(9px + 0.2vw); letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+#track-title { font-size:calc(14px + 0.6vw); font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+#track-artist{ font-size:calc(11px + 0.3vw); color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-#progress-wrap   { display:flex; flex-direction:column; gap:5px; }
+#progress-wrap   { display:flex; flex-direction:column; gap:6px; margin:0.5vh 0; }
 #progress-bar-bg { width:100%; height:5px; background:var(--surf3); border-radius:3px; overflow:hidden; }
 #progress-bar-fill { height:100%; background:var(--accent); border-radius:3px; width:0%; transition:width .5s linear; }
 #progress-times  { display:flex; justify-content:space-between; align-items:baseline; font-variant-numeric:tabular-nums; }
-#time-current    { font-size:clamp(12px,2vw,16px); font-weight:500; color:var(--text); }
+#time-current    { font-size:calc(11px + 0.3vw); font-weight:500; color:var(--text); }
 #time-sep        { font-size:10px; color:var(--muted); }
-#time-remaining  { font-size:clamp(10px,1.7vw,13px); color:var(--muted); }
+#time-remaining  { font-size:calc(10px + 0.2vw); color:var(--muted); }
 
-#controls { display:flex; align-items:center; gap:6px; }
+#controls { display:flex; align-items:center; gap:1.5vw; }
 .ctrl-btn {
-  width:clamp(38px,6.5vw,50px); height:clamp(38px,6.5vw,50px);
+  width:calc(34px + 1.5vw); height:calc(34px + 1.5vw); max-width:48px; max-height:48px;
   background:var(--surf2); border:1px solid var(--border); border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; flex-shrink:0; transition:background .15s,border-color .15s;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
 }
-.ctrl-btn:active { background:var(--surf3); border-color:var(--accent); }
+.ctrl-btn svg { width:45%; height:45%; }
 #play-btn {
-  width:clamp(46px,8vw,60px); height:clamp(46px,8vw,60px);
+  width:calc(42px + 2vw); height:calc(42px + 2vw); max-width:58px; max-height:58px;
   background:var(--accent); border:none; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; flex-shrink:0; transition:transform .1s,background .2s;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
 }
-#play-btn:active { transform:scale(.91); background:#2563eb; }
+#play-btn svg { width:45%; height:45%; transform:translateX(1px); }
 
-#media-status { font-size:9px; color:var(--muted); letter-spacing:.04em; }
+#media-status { font-size:calc(9px + 0.2vw); color:var(--muted); letter-spacing:.04em; }
 #media-status.ok  { color:var(--green); }
-#media-status.err { color:var(--amber); }
 
 /* Badge Spotify */
 #spotify-badge {
-  position:absolute; top:7px; right:9px;
-  display:flex; align-items:center; gap:5px;
-  font-size:9px; color:var(--muted); letter-spacing:.06em;
-  cursor:pointer; padding:3px 8px;
-  background:var(--surf2); border:1px solid var(--border);
-  border-radius:12px; transition:border-color .2s,color .2s;
+  position:absolute; top:1.5vh; right:1.5vw;
+  display:flex; align-items:center; gap:6px;
+  font-size:calc(9px + 0.2vw); color:var(--muted); letter-spacing:.06em;
+  cursor:pointer; padding:0.6vh 1.2vw;
+  background:var(--surf2); border:1px solid var(--border); border-radius:20px;
 }
 #spotify-badge.linked { border-color:var(--spotify); color:var(--spotify); }
 #spotify-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); }
 #spotify-badge.linked #spotify-dot { background:var(--spotify); }
 
-/* ════ SETUP OVERLAY ════ */
+/* ════ OVERLAYS (SETUP / LOCK) ════ */
 #setup-overlay {
   display:none; position:fixed; inset:0; z-index:300;
-  background:rgba(0,0,0,.85); backdrop-filter:blur(6px);
-  align-items:center; justify-content:center;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(6px); align-items:center; justify-content:center;
 }
 #setup-overlay.show { display:flex; }
 #setup-card {
-  background:var(--surf); border:1px solid var(--border); border-radius:20px;
-  padding:28px 28px 24px; width:min(90vw,400px);
-  display:flex; flex-direction:column; gap:16px;
+  background:var(--surf); border:1px solid var(--border); border-radius:24px;
+  padding:24px; width:min(90vw,420px); display:flex; flex-direction:column; gap:16px;
 }
 #setup-card h2 { font-size:16px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
 #setup-card a  { color:var(--accent2); text-decoration:none; }
-#setup-card a:hover { text-decoration:underline; }
 .setup-field { display:flex; flex-direction:column; gap:6px; }
 .setup-label { font-size:10px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
 .setup-input {
-  background:var(--surf2); border:1px solid var(--border); border-radius:10px;
-  padding:10px 14px; font-size:13px; color:var(--text);
-  outline:none; width:100%; font-family:monospace; transition:border-color .2s;
+  background:var(--surf2); border:1px solid var(--border); border-radius:12px;
+  padding:12px; font-size:13px; color:var(--text); outline:none; width:100%; font-family:monospace;
 }
-.setup-input:focus { border-color:var(--accent); }
-.setup-hint { font-size:10px; color:var(--muted); }
-.setup-btn {
-  padding:12px; border-radius:12px; border:none;
-  font-size:13px; font-weight:600; cursor:pointer;
-  transition:opacity .2s; letter-spacing:.04em;
-}
+.setup-btn { padding:12px; border-radius:12px; border:none; font-size:13px; font-weight:600; cursor:pointer; }
 #btn-spotify-login { background:var(--spotify); color:#000; }
-#btn-spotify-login:active { opacity:.8; }
-#btn-setup-close { background:var(--surf3); color:var(--text2); margin-top:-4px; }
-.setup-divider { height:1px; background:var(--border); margin:4px 0; }
-.setup-step { font-size:11px; color:var(--text2); line-height:1.8; }
-.setup-step b { color:var(--text); }
+#btn-setup-close { background:var(--surf3); color:var(--text2); }
 
-/* ════ LOCKSCREEN ════ */
 #lockscreen {
   display:none; position:fixed; inset:0; background:#000;
-  z-index:200; flex-direction:row; align-items:center;
-  justify-content:center; gap:60px; cursor:pointer;
+  z-index:200; flex-direction:row; align-items:center; justify-content:center; gap:8vw; cursor:pointer;
 }
 #lockscreen.show { display:flex; }
-#ls-clock { display:flex; flex-direction:column; align-items:center; gap:6px; }
-#ls-time  { font-size:clamp(70px,18vw,120px); font-weight:100; color:#fff; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
-#ls-date  { font-size:12px; color:rgba(255,255,255,.4); letter-spacing:.1em; text-transform:uppercase; }
+#ls-clock { display:flex; flex-direction:column; align-items:center; gap:1vh; }
+#ls-time  { font-size:calc(50px + 7vw); font-weight:100; color:#fff; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1; }
+#ls-date  { font-size:calc(11px + 0.3vw); color:rgba(255,255,255,.4); letter-spacing:.1em; text-transform:uppercase; }
 #ls-music {
-  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
-  border-radius:18px; padding:16px 20px; width:clamp(200px,32vw,280px);
-  display:flex; flex-direction:column; gap:10px;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+  border-radius:24px; padding:3vh 3vw; width:calc(180px + 12vw); display:flex; flex-direction:column; gap:1.5vh;
 }
-#ls-np-label { font-size:9px; letter-spacing:.12em; color:rgba(255,255,255,.3); text-transform:uppercase; }
-#ls-title    { font-size:15px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#ls-artist   { font-size:12px; color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#ls-controls { display:flex; justify-content:center; align-items:center; gap:20px; }
-.ls-ctrl-btn { width:40px; height:40px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.ls-ctrl-btn:active { background:rgba(255,255,255,.2); }
-#ls-play-btn { width:48px; height:48px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-#ls-hint { font-size:10px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; }
+#ls-title    { font-size:calc(13px + 0.5vw); font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-artist   { font-size:calc(11px + 0.2vw); color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-controls { display:flex; justify-content:center; align-items:center; gap:4vw; }
+.ls-ctrl-btn { width:42px; height:42px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+#ls-play-btn { width:52px; height:52px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+#ls-play-btn svg { transform:translateX(1px); }
+#ls-hint { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; }
 </style>
 </head>
 <body>
@@ -258,7 +239,7 @@ html,body {
   <div id="main">
 
     <div id="left-col">
-
+      
       <div id="clock-panel">
         <div id="clock-hm">
           <div id="clock-time">00:00</div>
@@ -269,9 +250,9 @@ html,body {
         </div>
         <div id="clock-date">—</div>
         <div id="ring-wrap">
-          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-            <circle id="ring-bg"   cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
-            <circle id="ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
+          <svg viewBox="0 0 80 80">
+            <circle id="ring-bg"   cx="40" cy="40" r="34" fill="none" stroke-width="4.5"/>
+            <circle id="ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="4.5"/>
           </svg>
           <div id="ring-label">MIN</div>
         </div>
@@ -283,16 +264,21 @@ html,body {
 
       <div id="weather-panel">
         <div id="wx-label">Meteo</div>
-        <div id="wx-icon">—</div>
-        <div id="wx-temp">—</div>
+        <div id="wx-info-row">
+          <div id="wx-icon-holder">
+            <svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>
+          </div>
+          <div id="wx-temp">—</div>
+        </div>
         <div id="wx-desc">Caricamento...</div>
       </div>
 
-    </div><div id="music-panel">
+    </div>
 
+    <div id="music-panel">
       <div id="art-wrap">
-        <img id="art-img" alt="Copertina">
-        <svg id="art-icon-svg" width="48" height="48" viewBox="0 0 24 24" fill="none">
+        <img id="art-img" alt="Cover">
+        <svg id="art-icon-svg" viewBox="0 0 24 24" fill="none">
           <path d="M9 18V5l12-2v13" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="6" cy="18" r="3" stroke="#4f8ef7" stroke-width="1.5"/>
           <circle cx="18" cy="16" r="3" stroke="#4f8ef7" stroke-width="1.5"/>
@@ -314,95 +300,62 @@ html,body {
         </div>
 
         <div id="controls">
-          <button class="ctrl-btn" id="btn-prev" type="button" aria-label="Precedente">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M19 20L9 12l10-8v16Z" fill="#f0f0fa"/>
-              <rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/>
-            </svg>
+          <button class="ctrl-btn" id="btn-prev" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M19 20L9 12l10-8v16Z" fill="#f0f0fa"/><rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/></svg>
           </button>
-          <button id="play-btn" type="button" aria-label="Play/Pausa">
-            <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>
-            </svg>
+          <button id="play-btn" type="button">
+            <svg id="play-icon" viewBox="0 0 24 24" fill="none"><path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/></svg>
           </button>
-          <button class="ctrl-btn" id="btn-next" type="button" aria-label="Successivo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M5 4l10 8-10 8V4Z" fill="#f0f0fa"/>
-              <rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/>
-            </svg>
+          <button class="ctrl-btn" id="btn-next" type="button">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 4l10 8-10 8V4Z" fill="#f0f0fa"/><rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="#f0f0fa"/></svg>
           </button>
         </div>
 
         <div id="media-status">Connetti Spotify per iniziare</div>
       </div>
 
-      <div id="spotify-badge" title="Impostazioni Spotify">
+      <div id="spotify-badge">
         <span id="spotify-dot"></span>
         <span id="spotify-label">Spotify</span>
       </div>
-
-    </div></div></div><div id="setup-overlay" role="dialog" aria-label="Configurazione Spotify">
-  <div id="setup-card">
-    <h2>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" fill="#1DB954"/>
-        <path d="M7 15c2.5-1 5.5-1.2 8 0M6.5 11.5c3-1.5 7-1.5 10 0M8 8c2.5-1 6-1 8.5.5"
-              stroke="#000" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      Configura Spotify
-    </h2>
-    <div class="setup-divider"></div>
-    <p class="setup-step">
-      <b>1.</b> Vai su <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a><br>
-      <b>2.</b> Crea un'app → copia il <b>Client ID</b><br>
-      <b>3.</b> In "Edit Settings" → Redirect URIs, aggiungi <b>esattamente</b> l'URI qui sotto e clicca <b>Add</b>, poi <b>Save</b>
-    </p>
-    <div style="background:var(--surf3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
-      <code id="redirect-uri-display" style="font-size:11px;color:var(--accent2);word-break:break-all;flex:1;line-height:1.5;"></code>
-      <button id="btn-copy-uri" type="button" style="flex-shrink:0;background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:10px;color:var(--text2);cursor:pointer;white-space:nowrap;">Copia</button>
     </div>
-    <span class="setup-hint" style="margin-top:-8px;">⚠️ Deve corrispondere esattamente a quello nel Dashboard Spotify</span>
-    <div class="setup-divider"></div>
+
+  </div>
+</div>
+
+<div id="setup-overlay">
+  <div id="setup-card">
+    <h2>Configura Spotify</h2>
+    <p style="font-size:12px; color:var(--text2); line-height:1.5;">Inserisci il tuo <b>Client ID</b> per abilitare i controlli multimediali e la sincronizzazione della traccia.</p>
     <div class="setup-field">
       <span class="setup-label">Client ID</span>
-      <input class="setup-input" id="client-id-input" type="text"
-             placeholder="es. 4b3c1a2d9e6f..." autocomplete="off" spellcheck="false">
-      <span class="setup-hint">Trovalo nel tuo Spotify Developer Dashboard</span>
+      <input class="setup-input" id="client-id-input" type="text" placeholder="Incolla Client ID da Spotify Developer Dashboard">
     </div>
     <button class="setup-btn" id="btn-spotify-login" type="button">Accedi con Spotify</button>
     <button class="setup-btn" id="btn-setup-close"   type="button">Chiudi</button>
   </div>
 </div>
 
-<div id="lockscreen" role="button" aria-label="Tocca per sbloccare">
+<div id="lockscreen">
   <div id="ls-clock">
     <div id="ls-time">00:00</div>
     <div id="ls-date">—</div>
   </div>
   <div id="ls-music">
-    <div id="ls-np-label">In riproduzione</div>
     <div id="ls-title">Nessuna traccia</div>
     <div id="ls-artist">—</div>
     <div id="ls-controls">
       <button class="ls-ctrl-btn" id="ls-prev" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M19 20L9 12l10-8v16Z" fill="rgba(255,255,255,.8)"/>
-          <rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="rgba(255,255,255,.8)"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M19 20L9 12l10-8v16Z" fill="#fff"/><rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#fff"/></svg>
       </button>
       <button id="ls-play-btn" type="button">
-        <svg id="ls-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>
-        </svg>
+        <svg id="ls-play-icon" viewBox="0 0 24 24" fill="none"><path d="M6 4l14 8-14 8V4Z" fill="#fff"/></svg>
       </button>
       <button class="ls-ctrl-btn" id="ls-next" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M5 4l10 8-10 8V4Z" fill="rgba(255,255,255,.8)"/>
-          <rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="rgba(255,255,255,.8)"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 4l10 8-10 8V4Z" fill="#fff"/><rect x="16.5" y="4" width="2.5" height="16" rx="1.25" fill="#fff"/></svg>
       </button>
     </div>
-    <div id="ls-hint">Tocca per tornare all'app</div>
+    <div id="ls-hint">Tocca per sbloccare</div>
   </div>
 </div>
 
@@ -410,7 +363,45 @@ html,body {
 'use strict';
 
 /* ═══════════════════════════════════════
-   CLOCK
+   DISEGNI SVG DEL METEO STILIZZATI
+═══════════════════════════════════════ */
+const SVG_ICONS = {
+  // Sole / Sereno
+  clear: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
+  // Poco Nuvoloso
+  cloudy_sun: `<svg viewBox="0 0 24 24"><path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41"/><path d="M15.22 10A5 5 0 0 0 10 14.32a3.5 3.5 0 0 0-3 3.43c0 1.93 1.57 3.5 3.5 3.5h7c1.93 0 3.5-1.57 3.5-3.5a3.5 3.5 0 0 0-3-3.43c-.04-1.74-1.2-3.17-2.78-3.82z"/></svg>`,
+  // Nuvoloso
+  cloudy: `<svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>`,
+  // Pioggia
+  rain: `<svg viewBox="0 0 24 24"><path d="M17 14.5a3.5 3.5 0 0 0-3.05-3.46C13.43 8.58 11.03 6 8 6c-2.42 0-4.5 1.58-5.21 3.82C1.48 10.12 0 11.89 0 14a4 4 0 0 0 4 4h9a3.5 3.5 0 0 0 4-3.5z" transform="translate(3,-2)"/><path d="M8 17v4M12 17v4M16 17v4"/></svg>`,
+  // Temporale
+  thunderstorm: `<svg viewBox="0 0 24 24"><path d="M17.5 16A3.5 3.5 0 0 0 21 12.5c0-1.77-1.32-3.23-3.05-3.46C17.43 6.47 15.03 4 12 4c-2.42 0-4.5 1.58-5.21 3.82C4.48 8.12 3 9.89 3 12a4 4 0 0 0 4 4h3"/><path d="m13 14-3 4h4l-2 5" stroke-orange/></svg>`,
+  // Neve
+  snow: `<svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/><path d="M8 21h.01M12 21h.01M16 21h.01M10 23h.01M14 23h.01"/></svg>`,
+  // Nebbia
+  fog: `<svg viewBox="0 0 24 24"><path d="M4 8h16M2 12h20M5 16h14M8 20h8"/></svg>`
+};
+
+const WX_MAPPING = {
+  0:'clear', 1:'cloudy_sun', 2:'cloudy_sun', 3:'cloudy',
+  45:'fog', 48:'fog',
+  51:'rain', 53:'rain', 55:'rain', 61:'rain', 63:'rain', 65:'rain', 80:'rain', 81:'rain', 82:'rain',
+  71:'snow', 73:'snow', 75:'snow',
+  95:'thunderstorm', 96:'thunderstorm', 99:'thunderstorm'
+};
+
+const WX_DESC = {
+  0:'Sereno', 1:'Quasi sereno', 2:'Parz. nuvoloso', 3:'Nuvoloso',
+  45:'Nebbia', 48:'Nebbia fitta',
+  51:'Pioggerella', 53:'Pioggerella', 55:'Pioggerella fitta',
+  61:'Pioggia', 63:'Pioggia', 65:'Pioggia forte',
+  71:'Neve leggera', 73:'Neve', 75:'Neve intensa',
+  80:'Rovesci di pioggia', 81:'Rovesci forti', 82:'Temporale violento',
+  95:'Temporale', 96:'Temporale con grandine', 99:'Temporale forte'
+};
+
+/* ═══════════════════════════════════════
+   CLOCK LOGIC
 ═══════════════════════════════════════ */
 const DAYS   = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
@@ -439,7 +430,7 @@ const awakeBtn  = document.getElementById('awake-btn');
 const awakeText = document.getElementById('awake-text');
 
 async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) { awakeText.textContent='Non disponibile'; return; }
+  if (!('wakeLock' in navigator)) { awakeText.textContent='Non supp.'; return; }
   try {
     wakeLock = await navigator.wakeLock.request('screen');
     awakeBtn.classList.add('on'); awakeText.textContent='Schermo ON';
@@ -450,62 +441,40 @@ async function acquireWakeLock() {
 }
 async function releaseWakeLock() { if (wakeLock) await wakeLock.release(); }
 awakeBtn.addEventListener('click', () => wakeLock ? releaseWakeLock() : acquireWakeLock());
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState==='visible' && awakeBtn.classList.contains('on') && !wakeLock)
-    acquireWakeLock();
-});
 
 /* ═══════════════════════════════════════
-   METEO — Open-Meteo (no API key)
+   METEO CONTROLLER
 ═══════════════════════════════════════ */
-const WX_CODES = {
-  0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
-  45:'🌫️', 48:'🌫️',
-  51:'🌦️', 53:'🌦️', 55:'🌧️',
-  61:'🌧️', 63:'🌧️', 65:'🌧️',
-  71:'🌨️', 73:'🌨️', 75:'❄️',
-  80:'🌦️', 81:'🌧️', 82:'⛈️',
-  95:'⛈️', 96:'⛈️', 99:'⛈️',
-};
-const WX_DESC = {
-  0:'Sereno', 1:'Prevalente sereno', 2:'Parzialmente nuvoloso', 3:'Nuvoloso',
-  45:'Nebbia', 48:'Nebbia',
-  51:'Pioggerella', 53:'Pioggerella', 55:'Pioggerella intensa',
-  61:'Pioggia', 63:'Pioggia', 65:'Pioggia intensa',
-  71:'Neve', 73:'Neve', 75:'Neve intensa',
-  80:'Rovesci', 81:'Rovesci', 82:'Rovesci forti',
-  95:'Temporale', 96:'Temporale', 99:'Temporale',
-};
-
 async function loadWeather() {
   if (!navigator.geolocation) {
-    document.getElementById('wx-desc').textContent = 'GPS non disponibile';
+    document.getElementById('wx-desc').textContent = 'GPS non supp.';
     return;
   }
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lon } = pos.coords;
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,weathercode&wind_speed_unit=kmh&timezone=auto`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,weathercode&timezone=auto`;
       const res  = await fetch(url);
       const data = await res.json();
       const temp = Math.round(data.current.temperature_2m);
       const code = data.current.weathercode;
-      document.getElementById('wx-icon').textContent = WX_CODES[code] || '🌡️';
+      
+      const iconKey = WX_MAPPING[code] || 'cloudy';
+      document.getElementById('wx-icon-holder').innerHTML = SVG_ICONS[iconKey];
       document.getElementById('wx-temp').textContent = `${temp}°`;
-      document.getElementById('wx-desc').textContent = WX_DESC[code] || '—';
+      document.getElementById('wx-desc').textContent = WX_DESC[code] || 'Meteo N/D';
     } catch(e) {
-      document.getElementById('wx-desc').textContent = 'Errore meteo';
+      document.getElementById('wx-desc').textContent = 'Errore dati';
     }
   }, () => {
-    document.getElementById('wx-desc').textContent = 'Posizione negata';
+    document.getElementById('wx-desc').textContent = 'Segnale GPS assente';
   });
 }
-
 loadWeather();
-setInterval(loadWeather, 10 * 60 * 1000);
+setInterval(loadWeather, 15 * 60 * 1000);
 
 /* ═══════════════════════════════════════
-   SPOTIFY AUTH (PKCE)
+   SPOTIFY AUTH PACK (PKCE)
 ═══════════════════════════════════════ */
 const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
 let spotifyToken  = null;
@@ -515,44 +484,18 @@ let progressTimer = null;
 let currentProgress   = 0;
 let currentDuration   = 0;
 let currentlyPlaying  = false;
-
 const REDIRECT_URI = location.origin + location.pathname;
-const uriDisplay = document.getElementById('redirect-uri-display');
-if (uriDisplay) uriDisplay.textContent = REDIRECT_URI;
-
-document.getElementById('btn-copy-uri').addEventListener('click', () => {
-  const copy = () => {
-    const btn = document.getElementById('btn-copy-uri');
-    btn.textContent='✓ Copiato!'; btn.style.color='var(--green)';
-    setTimeout(()=>{ btn.textContent='Copia'; btn.style.color=''; }, 2000);
-  };
-  if (navigator.clipboard) navigator.clipboard.writeText(REDIRECT_URI).then(copy).catch(fallbackCopy);
-  else fallbackCopy();
-  function fallbackCopy() {
-    const ta = document.createElement('textarea');
-    ta.value=REDIRECT_URI; ta.style.cssText='position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); copy();
-  }
-});
 
 function getSavedClientId() { try { return localStorage.getItem('bw_client_id')||''; } catch(e){ return ''; } }
 function saveClientId(id)   { try { localStorage.setItem('bw_client_id',id); } catch(e){} }
 
-async function sha256(plain) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
-}
-function base64urlencode(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function generateRandom(len=64) {
-  const arr=new Uint8Array(len); crypto.getRandomValues(arr); return base64urlencode(arr);
-}
+async function sha256(plain) { return crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain)); }
+function base64urlencode(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function generateRandom(len=64) { const arr=new Uint8Array(len); crypto.getRandomValues(arr); return base64urlencode(arr); }
 
 async function startSpotifyLogin() {
   const clientId = document.getElementById('client-id-input').value.trim();
-  if (!clientId) { alert('Inserisci il Client ID!'); return; }
+  if (!clientId) { alert('Client ID richiesto!'); return; }
   saveClientId(clientId);
   const verifier  = generateRandom(64);
   const challenge = base64urlencode(await sha256(verifier));
@@ -568,21 +511,17 @@ async function exchangeCode(code) {
   const clientId = getSavedClientId();
   let verifier=''; try { verifier=sessionStorage.getItem('bw_verifier')||''; } catch(e){}
   if (!clientId||!verifier) return;
-  const body = new URLSearchParams({
-    grant_type:'authorization_code', code, redirect_uri:REDIRECT_URI,
-    client_id:clientId, code_verifier:verifier,
-  });
+  const body = new URLSearchParams({ grant_type:'authorization_code', code, redirect_uri:REDIRECT_URI, client_id:clientId, code_verifier:verifier });
   try {
     const res  = await fetch('https://accounts.spotify.com/api/token',{method:'POST',body});
     const data = await res.json();
     if (data.access_token) {
-      spotifyToken=data.access_token;
-      spotifyExpiry=Date.now()+(data.expires_in-60)*1000;
+      spotifyToken=data.access_token; spotifyExpiry=Date.now()+(data.expires_in-60)*1000;
       try { localStorage.setItem('bw_refresh',data.refresh_token); localStorage.setItem('bw_expiry',spotifyExpiry); } catch(e){}
       history.replaceState({},'',location.pathname);
       onSpotifyLinked();
     }
-  } catch(e) { console.error('Token exchange error',e); }
+  } catch(e) {}
 }
 
 async function refreshAccessToken() {
@@ -594,8 +533,7 @@ async function refreshAccessToken() {
     const res=await fetch('https://accounts.spotify.com/api/token',{method:'POST',body});
     const data=await res.json();
     if (data.access_token) {
-      spotifyToken=data.access_token;
-      spotifyExpiry=Date.now()+(data.expires_in-60)*1000;
+      spotifyToken=data.access_token; spotifyExpiry=Date.now()+(data.expires_in-60)*1000;
       try { localStorage.setItem('bw_expiry',spotifyExpiry); } catch(e){}
       if (data.refresh_token) try { localStorage.setItem('bw_refresh',data.refresh_token); } catch(e){}
       return true;
@@ -623,7 +561,7 @@ async function spotifyCall(path, method='GET', body=null) {
 }
 
 /* ═══════════════════════════════════════
-   PLAYER UI
+   PLAYER & PROGRESS ENGINE
 ═══════════════════════════════════════ */
 const SVG_PLAY  = '<path d="M6 4l14 8-14 8V4Z" fill="#ffffff"/>';
 const SVG_PAUSE = '<rect x="5" y="4" width="4" height="16" rx="1.5" fill="#fff"/><rect x="15" y="4" width="4" height="16" rx="1.5" fill="#fff"/>';
@@ -665,42 +603,35 @@ function updateTrackUI(data) {
     document.getElementById('track-artist').textContent='—';
     document.getElementById('ls-title').textContent='Nessuna traccia';
     document.getElementById('ls-artist').textContent='—';
-    statusEl.textContent='● Connesso — nessun brano'; statusEl.className='ok';
+    statusEl.textContent='● Dispositivo in standby';
     setPlayState(false); return;
   }
-  const item  =data.item;
-  const title =item.name||'—';
+  const item=data.item;
+  const title=item.name||'—';
   const artist=(item.artists||[]).map(a=>a.name).join(', ')||'—';
-  const img   =item.album?.images?.[0]?.url||null;
-  const prog  =data.progress_ms||0;
-  const dur   =item.duration_ms||0;
-  const play  =data.is_playing||false;
+  const img=item.album?.images?.[0]?.url||null;
+  const prog=data.progress_ms||0;
+  const dur=item.duration_ms||0;
+  const play=data.is_playing||false;
 
-  document.getElementById('track-title').textContent =title;
+  document.getElementById('track-title').textContent=title;
   document.getElementById('track-artist').textContent=artist;
-  document.getElementById('ls-title').textContent    =title;
-  document.getElementById('ls-artist').textContent   =artist;
+  document.getElementById('ls-title').textContent=title;
+  document.getElementById('ls-artist').textContent=artist;
 
   const artImg=document.getElementById('art-img');
   const artSvg=document.getElementById('art-icon-svg');
   if (img) { artImg.src=img; artImg.style.display='block'; artSvg.style.display='none'; }
-  else     { artImg.style.display='none'; artSvg.style.display='flex'; }
+  else { artImg.style.display='none'; artSvg.style.display='flex'; }
 
   updateProgress(prog,dur);
   setPlayState(play);
   if (play) startProgressTick(); else clearInterval(progressTimer);
-  statusEl.textContent=`● ${play?'In riproduzione':'In pausa'}`; statusEl.className='ok';
+  statusEl.textContent=play?'● Riproduzione attiva':'● In pausa';
 }
 
-async function pollPlayback() {
-  const data=await spotifyCall('/me/player');
-  if (data!==null) updateTrackUI(data);
-}
-
-function startPolling() {
-  clearInterval(pollTimer); pollPlayback();
-  pollTimer=setInterval(pollPlayback,5000);
-}
+async function pollPlayback() { const data=await spotifyCall('/me/player'); if (data!==null) updateTrackUI(data); }
+function startPolling() { clearInterval(pollTimer); pollPlayback(); pollTimer=setInterval(pollPlayback,4000); }
 
 function onSpotifyLinked() {
   document.getElementById('spotify-badge').classList.add('linked');
@@ -710,46 +641,35 @@ function onSpotifyLinked() {
 }
 
 document.getElementById('play-btn').addEventListener('click', async () => {
-  const action=currentlyPlaying?'/me/player/pause':'/me/player/play';
-  await spotifyCall(action,'PUT');
-  setPlayState(!currentlyPlaying);
-  if (!currentlyPlaying) startProgressTick(); else clearInterval(progressTimer);
-  setTimeout(pollPlayback,800);
+  const act=currentlyPlaying?'/me/player/pause':'/me/player/play';
+  await spotifyCall(act,'PUT'); setPlayState(!currentlyPlaying);
+  setTimeout(pollPlayback,400);
 });
-document.getElementById('btn-prev').addEventListener('click', async () => { await spotifyCall('/me/player/previous','POST'); setTimeout(pollPlayback,800); });
-document.getElementById('btn-next').addEventListener('click', async () => { await spotifyCall('/me/player/next','POST'); setTimeout(pollPlayback,800); });
+document.getElementById('btn-prev').addEventListener('click', async () => { await spotifyCall('/me/player/previous','POST'); setTimeout(pollPlayback,500); });
+document.getElementById('btn-next').addEventListener('click', async () => { await spotifyCall('/me/player/next','POST'); setTimeout(pollPlayback,500); });
 
 document.getElementById('ls-play-btn').addEventListener('click', e=>{ e.stopPropagation(); document.getElementById('play-btn').click(); });
 document.getElementById('ls-prev').addEventListener('click',     e=>{ e.stopPropagation(); document.getElementById('btn-prev').click(); });
 document.getElementById('ls-next').addEventListener('click',     e=>{ e.stopPropagation(); document.getElementById('btn-next').click(); });
 
 /* ═══════════════════════════════════════
-   SETUP OVERLAY
+   INTERFACE GESTURES & INTERACTION
 ═══════════════════════════════════════ */
 const setupOverlay=document.getElementById('setup-overlay');
 document.getElementById('spotify-badge').addEventListener('click', ()=>{
   document.getElementById('client-id-input').value=getSavedClientId();
   setupOverlay.classList.add('show');
 });
-document.getElementById('btn-setup-close').addEventListener('click',  ()=>setupOverlay.classList.remove('show'));
+document.getElementById('btn-setup-close').addEventListener('click', ()=>setupOverlay.classList.remove('show'));
 document.getElementById('btn-spotify-login').addEventListener('click', startSpotifyLogin);
-setupOverlay.addEventListener('click', e=>{ if(e.target===setupOverlay) setupOverlay.classList.remove('show'); });
 
-/* ═══════════════════════════════════════
-   LOCKSCREEN
-═══════════════════════════════════════ */
 const lockscreen=document.getElementById('lockscreen');
-document.getElementById('lockmode-toggle').addEventListener('change', e=>{
-  lockscreen.classList.toggle('show',e.target.checked);
-});
-lockscreen.addEventListener('click',()=>{
-  lockscreen.classList.remove('show');
-  document.getElementById('lockmode-toggle').checked=false;
-});
+document.getElementById('lockmode-toggle').addEventListener('change', e=>{ lockscreen.classList.toggle('show',e.target.checked); });
+lockscreen.addEventListener('click',()=>{ lockscreen.classList.remove('show'); document.getElementById('lockmode-toggle').checked=false; });
 lockscreen.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 
 /* ═══════════════════════════════════════
-   INIT
+   INITIALIZATION INITIALIZER
 ═══════════════════════════════════════ */
 (async function init() {
   const saved=getSavedClientId();
