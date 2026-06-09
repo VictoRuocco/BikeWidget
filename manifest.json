@@ -1,7 +1,7 @@
 {
   "name": "BikeWidget",
   "short_name": "BikeWidget",
-  "description": "Orologio e player musicale per uscite in bici",
+  "description": "Orologio, meteo e player musicale per uscite in bici",
   "start_url": "./index.html",
   "display": "fullscreen",
   "orientation": "landscape",
