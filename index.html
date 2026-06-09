@@ -234,20 +234,14 @@ html,body {
 
 /* ── LOCKSCREEN OVERLAY ── */
 #lockscreen {
-  display:none; position:fixed; inset:0; background:#000; z-index:200; flex-direction:row; align-items:center; justify-content:center; gap:4vw; cursor:pointer;
+  display:none; position:fixed; inset:0; background:#000; z-index:200; flex-direction:row; align-items:center; justify-content:center; gap:8vw; cursor:pointer;
 }
 #lockscreen.show { display:flex; }
-
-#lockscreen > div {
-  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-  border-radius:24px; padding:4vh 2vw; width:40vw; max-width:420px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2vh;
-}
 
 #ls-clock { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2vh; }
 #ls-samsung-time-wrap {
   display:flex; align-items:center; justify-content:center; font-family:'Oswald', sans-serif;
-  font-size:calc(48px + 4vw); line-height:0.85; letter-spacing:-0.02em; font-variant-numeric: tabular-nums;
+  font-size:calc(66px + 7.5vw); line-height:0.85; letter-spacing:-0.02em; font-variant-numeric: tabular-nums;
 }
 .ls-time-hours { font-weight:700; color:#fff; }
 .ls-time-colon { font-weight:500; color:rgba(255,255,255,0.4); margin:0 -2px; }
@@ -264,15 +258,16 @@ html,body {
 #ls-wx-temp { font-family:'Oswald', sans-serif; font-size:calc(22px + 2vw); font-weight:300; color:#fff; line-height:1; }
 
 #ls-music {
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5vh; width:100%;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+  border-radius:24px; padding:3vh 3vw; width:calc(180px + 12vw); display:flex; flex-direction:column; gap:1.5vh;
 }
-#ls-title    { font-size:calc(13px + 0.5vw); font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; width:100%; }
-#ls-artist   { font-size:calc(11px + 0.2vw); color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; width:100%; }
+#ls-title    { font-size:calc(13px + 0.5vw); font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#ls-artist   { font-size:calc(11px + 0.2vw); color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #ls-controls { display:flex; justify-content:center; align-items:center; gap:4vw; }
 .ls-ctrl-btn { width:42px; height:42px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:50%; display:flex; align-items:center; justify-content:center; }
 #ls-play-btn { width:52px; height:52px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
 #ls-play-btn svg { transform:translateX(1px); }
-#ls-hint { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; margin-top: 1vh; }
+#ls-hint { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; }
 </style>
 </head>
 <body>
@@ -407,7 +402,7 @@ html,body {
 <div id="playlist-overlay">
   <div id="playlist-card">
     <div id="playlist-header">
-      <h3>Scegli Musica</h3>
+      <h3>Musica Recente</h3>
       <button id="btn-playlist-close" type="button">×</button>
     </div>
     <div id="playlist-list">
@@ -430,40 +425,24 @@ html,body {
 </div>
 
 <div id="lockscreen">
-  <div id="ls-clock-panel">
-    <div id="ls-clock">
-      <div id="ls-samsung-time-wrap">
-        <span class="ls-time-hours" id="ls-txt-hours">00</span>
-        <span class="ls-time-colon">:</span>
-        <span class="ls-time-mins" id="ls-txt-mins">00</span>
-      </div>
-      <div id="ls-date">—</div>
-      <div id="ls-weather">
-        <div id="ls-wx-icon-holder">
-          <svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>
-        </div>
-        <div id="ls-wx-temp">—</div>
-      </div>
+  <div id="ls-clock">
+    <div id="ls-samsung-time-wrap">
+      <span class="ls-time-hours" id="ls-txt-hours">00</span>
+      <span class="ls-time-colon">:</span>
+      <span class="ls-time-mins" id="ls-txt-mins">00</span>
     </div>
-    
-    <div id="wx-hourly-alert" style="border-top: none; padding-top: 1.5vh; width: 100%; margin-top: 1vh;">
-      <div class="hr-forecast">
-        <span class="hr-time">+1h</span>
-        <div class="hr-icon" id="ls-hr1-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></svg></div>
-        <span class="hr-pop" id="ls-hr1-pop">--%</span>
+    <div id="ls-date">—</div>
+    <div id="ls-weather">
+      <div id="ls-wx-icon-holder">
+        <svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>
       </div>
-      <div class="hr-forecast">
-        <span class="hr-time">+2h</span>
-        <div class="hr-icon" id="ls-hr2-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></svg></div>
-        <span class="hr-pop" id="ls-hr2-pop">--%</span>
-      </div>
+      <div id="ls-wx-temp">—</div>
     </div>
   </div>
-  
   <div id="ls-music">
     <div id="ls-title">Nessuna traccia</div>
     <div id="ls-artist">—</div>
-    <div id="ls-controls" style="margin-top: 1.5vh;">
+    <div id="ls-controls">
       <button class="ls-ctrl-btn" id="ls-prev" type="button">
         <svg viewBox="0 0 24 24" fill="none"><path d="M19 20L9 12l10-8v16Z" fill="#fff"/><rect x="5" y="4" width="2.5" height="16" rx="1.25" fill="#fff"/></svg>
       </button>
@@ -573,20 +552,12 @@ async function loadWeather() {
       document.getElementById('hr1-icon').innerHTML = SVG_ICONS[WX_MAPPING[code1h] || 'clear'];
       document.getElementById('hr1-pop').textContent = `${pop1h}%`;
       document.getElementById('hr1-pop').className = pop1h > 20 ? "hr-pop rainy" : "hr-pop";
-      
-      document.getElementById('ls-hr1-icon').innerHTML = SVG_ICONS[WX_MAPPING[code1h] || 'clear'];
-      document.getElementById('ls-hr1-pop').textContent = `${pop1h}%`;
-      document.getElementById('ls-hr1-pop').className = pop1h > 20 ? "hr-pop rainy" : "hr-pop";
 
       const code2h = data.hourly.weathercode[currentHourIndex + 2] || 0;
       const pop2h  = data.hourly.precipitation_probability[currentHourIndex + 2] ?? 0;
       document.getElementById('hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
       document.getElementById('hr2-pop').textContent = `${pop2h}%`;
       document.getElementById('hr2-pop').className = pop2h > 20 ? "hr-pop rainy" : "hr-pop";
-      
-      document.getElementById('ls-hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
-      document.getElementById('ls-hr2-pop').textContent = `${pop2h}%`;
-      document.getElementById('ls-hr2-pop').className = pop2h > 20 ? "hr-pop rainy" : "hr-pop";
     } catch(e) { document.getElementById('wx-desc').textContent = 'Errore dati meteo'; }
   }, () => { document.getElementById('wx-desc').textContent = 'Segnale GPS assente'; });
 }
