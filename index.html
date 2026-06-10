@@ -915,12 +915,12 @@ async function loadRecents() {
       }
     }
   }
-  // ── SEZIONE 2: Le tue Playlist ──
+  // ── SEZIONE 2: Le Tue Playlist ──
   if (playlistData && playlistData.items && playlistData.items.length > 0) {
     const title2 = document.createElement('div');
     title2.className = 'playlist-section-title';
     title2.style.marginTop = container.children.length > 0 ? '14px' : '0';
-    title2.textContent = 'Le tue Playlist';
+    title2.textContent = 'Le Tue Playlist';
     container.appendChild(title2);
 
     for (const item of playlistData.items) {
