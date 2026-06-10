@@ -812,28 +812,32 @@ async function loadRecents() {
 
   // ── SEZIONE 1: Ascolti Recenti ──
   if (recentData && recentData.items && recentData.items.length > 0) {
-    const seenTrackUris = new Set();
-    const toResolve = []; 
-    let lastContextUri = null;
+    const title1 = document.createElement('div');
+    title1.className = 'playlist-section-title';
+    title1.textContent = 'Ascolti Recenti';
+    container.appendChild(title1);
+
+    const seenUris = new Set();
+    const itemsToDisplay = [];
 
     for (const item of recentData.items) {
       if (!item || !item.track) continue;
       if (item.context && (item.context.type === 'playlist' || item.context.type === 'album')) {
         const uri = item.context.uri;
-        if (uri !== lastContextUri) {
-          lastContextUri = uri;
-          toResolve.push({ type: item.context.type, id: uri.split(':')[2], uri });
+        if (!seenUris.has(uri)) {
+          seenUris.add(uri);
+          itemsToDisplay.push({ type: item.context.type, id: uri.split(':')[2], uri });
         }
       } else {
         const uri = item.track.uri;
-        if (!seenTrackUris.has(uri)) {
-          seenTrackUris.add(uri);
-          toResolve.push({ type: 'track', uri, trackData: item.track });
+        if (!seenUris.has(uri)) {
+          seenUris.add(uri);
+          itemsToDisplay.push({ type: 'track', trackData: item.track, uri });
         }
       }
     }
 
-    const resolved = await Promise.all(toResolve.map(async entry => {
+    const resolved = await Promise.all(itemsToDisplay.map(async entry => {
       if (entry.type === 'track') return entry;
       if (entry.type === 'playlist') {
         const d = await spotifyCall(`/playlists/${entry.id}?fields=name,images,tracks.total,uri`);
@@ -846,39 +850,30 @@ async function loadRecents() {
       return null;
     }));
 
-    const validItems = resolved.filter(Boolean);
-
-    if (validItems.length > 0) {
-      const title1 = document.createElement('div');
-      title1.className = 'playlist-section-title';
-      title1.textContent = 'Ascolti Recenti';
-      container.appendChild(title1);
-
-      for (const entry of validItems) {
-        if (entry.type === 'playlist') {
-          const d = entry.detail;
-          const imgUrl = d.images?.[0]?.url || '';
-          const sub = `Playlist · ${d.tracks?.total ?? 0} brani`;
-          container.appendChild(makeItem(imgUrl, d.name || 'Playlist', sub, () =>
-            spotifyCall('/me/player/play', 'PUT', { context_uri: entry.uri })
-          ));
-        } else if (entry.type === 'album') {
-          const d = entry.detail;
-          const imgUrl = d.images?.[0]?.url || '';
-          const artists = (d.artists || []).map(a => a.name).join(', ');
-          const sub = `Album · ${artists}`;
-          container.appendChild(makeItem(imgUrl, d.name || 'Album', sub, () =>
-            spotifyCall('/me/player/play', 'PUT', { context_uri: entry.uri })
-          ));
-        } else if (entry.type === 'track') {
-          const t = entry.trackData;
-          const imgUrl = t.album?.images?.[0]?.url || '';
-          const artists = (t.artists || []).map(a => a.name).join(', ');
-          const sub = `Brano · ${artists}`;
-          container.appendChild(makeItem(imgUrl, t.name || 'Brano', sub, () =>
-            spotifyCall('/me/player/play', 'PUT', { uris: [entry.uri] })
-          ));
-        }
+    for (const entry of resolved.filter(Boolean)) {
+      if (entry.type === 'playlist') {
+        const d = entry.detail;
+        const imgUrl = d.images?.[0]?.url || '';
+        const sub = `Playlist · ${d.tracks?.total ?? 0} brani`;
+        container.appendChild(makeItem(imgUrl, d.name || 'Playlist', sub, () =>
+          spotifyCall('/me/player/play', 'PUT', { context_uri: entry.uri })
+        ));
+      } else if (entry.type === 'album') {
+        const d = entry.detail;
+        const imgUrl = d.images?.[0]?.url || '';
+        const artists = (d.artists || []).map(a => a.name).join(', ');
+        const sub = `Album · ${artists}`;
+        container.appendChild(makeItem(imgUrl, d.name || 'Album', sub, () =>
+          spotifyCall('/me/player/play', 'PUT', { context_uri: entry.uri })
+        ));
+      } else if (entry.type === 'track') {
+        const t = entry.trackData;
+        const imgUrl = t.album?.images?.[0]?.url || '';
+        const artists = (t.artists || []).map(a => a.name).join(', ');
+        const sub = `Brano · ${artists}`;
+        container.appendChild(makeItem(imgUrl, t.name || 'Brano', sub, () =>
+          spotifyCall('/me/player/play', 'PUT', { uris: [entry.uri] })
+        ));
       }
     }
   }
