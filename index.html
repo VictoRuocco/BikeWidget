@@ -817,27 +817,28 @@ async function loadRecents() {
     title1.textContent = 'Ascolti Recenti';
     container.appendChild(title1);
 
-    const seenUris = new Set();
-    const itemsToDisplay = [];
+    const toResolve = []; 
+    let lastUri = null;
 
     for (const item of recentData.items) {
       if (!item || !item.track) continue;
+      
       if (item.context && (item.context.type === 'playlist' || item.context.type === 'album')) {
         const uri = item.context.uri;
-        if (!seenUris.has(uri)) {
-          seenUris.add(uri);
-          itemsToDisplay.push({ type: item.context.type, id: uri.split(':')[2], uri });
+        if (uri !== lastUri) {
+          lastUri = uri;
+          toResolve.push({ type: item.context.type, id: uri.split(':')[2], uri });
         }
       } else {
         const uri = item.track.uri;
-        if (!seenUris.has(uri)) {
-          seenUris.add(uri);
-          itemsToDisplay.push({ type: 'track', trackData: item.track, uri });
+        if (uri !== lastUri) {
+          lastUri = uri;
+          toResolve.push({ type: 'track', uri, trackData: item.track });
         }
       }
     }
 
-    const resolved = await Promise.all(itemsToDisplay.map(async entry => {
+    const resolved = await Promise.all(toResolve.map(async entry => {
       if (entry.type === 'track') return entry;
       if (entry.type === 'playlist') {
         const d = await spotifyCall(`/playlists/${entry.id}?fields=name,images,tracks.total,uri`);
