@@ -367,7 +367,6 @@ html,body {
       </div>
 
       <div id="weather-panel">
-        <div id="wx-label">Meteo</div>
         <div id="wx-info-row">
           <div id="wx-icon-holder">
             <svg viewBox="0 0 24 24"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.77-1.32-3.23-3.05-3.46C17.43 9.47 15.03 7 12 7c-2.42 0-4.5 1.58-5.21 3.82C4.48 11.12 3 12.89 3 15a4 4 0 0 0 4 4z"/></svg>
@@ -403,7 +402,7 @@ html,body {
 
       <div id="music-info">
         <div id="np-label">In riproduzione</div>
-        <div id="track-title">Nessuna traccia</div>
+        <div id="track-title">Nessuna Traccia</div>
         <div id="track-artist">—</div>
 
         <div id="progress-wrap">
@@ -509,7 +508,7 @@ html,body {
 
   <div class="ls-panel-half" id="ls-right-panel">
     <div id="ls-music">
-      <div id="ls-title">Nessuna traccia</div>
+      <div id="ls-title">Nessuna Traccia</div>
       <div id="ls-artist">—</div>
       
       <div id="ls-controls">
@@ -574,11 +573,11 @@ const SVG_ICONS = {
   fog: `<svg viewBox="0 0 24 24"><path d="M4 8h16M2 12h20M5 16h14M8 20h8"/></svg>`
 };
 const WX_MAPPING = { 0:'clear', 1:'cloudy_sun', 2:'cloudy_sun', 3:'cloudy', 45:'fog', 48:'fog', 51:'rain', 53:'rain', 55:'rain', 61:'rain', 63:'rain', 65:'rain', 80:'rain', 81:'rain', 82:'rain', 71:'snow', 73:'snow', 75:'snow', 95:'thunderstorm', 96:'thunderstorm', 99:'thunderstorm' };
-const WX_DESC = { 0:'Sereno', 1:'Quasi sereno', 2:'Parz. nuvoloso', 3:'Nuvoloso', 45:'Nebbia', 48:'Nebbia fitta', 51:'Pioggerella', 53:'Pioggerella', 55:'Pioggerella fitta', 61:'Pioggia', 63:'Pioggia', 65:'Pioggia forte', 71:'Neve leggera', 73:'Neve', 75:'Neve intensa', 80:'Rovesci di pioggia', 81:'Rovesci forti', 82:'Temporale violento', 95:'Temporale', 96:'Temporale con grandine', 99:'Temporale forte' };
+const WX_DESC = { 0:'Sereno', 1:'Quasi Sereno', 2:'Parzialmente Nuvoloso', 3:'Nuvoloso', 45:'Nebbia', 48:'Nebbia Fitta', 51:'Pioggerella', 53:'Pioggerella', 55:'Pioggerella Fitta', 61:'Pioggia', 63:'Pioggia', 65:'Pioggia Forte', 71:'Neve Leggera', 73:'Neve', 75:'Neve Intensa', 80:'Rovesci di Pioggia', 81:'Rovesci Forti', 82:'Temporale Violento', 95:'Temporale', 96:'Temporale con Grandine', 99:'Temporale Forte' };
 
 /* ── CLOCK LOGIC ── */
-const DAYS   = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-const MONTHS = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const DAYS   = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const pad = n => String(n).padStart(2,'0');
 
 function updateClock() {
@@ -651,8 +650,8 @@ async function loadWeather() {
       document.getElementById('ls-hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
       document.getElementById('ls-hr2-pop').textContent = `${pop2h}%`;
       document.getElementById('ls-hr2-pop').className = pop2h > 20 ? "ls-hr-pop rainy" : "ls-hr-pop";
-    } catch(e) { document.getElementById('wx-desc').textContent = 'Errore dati meteo'; }
-  }, () => { document.getElementById('wx-desc').textContent = 'Segnale GPS assente'; });
+    } catch(e) { document.getElementById('wx-desc').textContent = 'Errore Dati Meteo'; }
+  }, () => { document.getElementById('wx-desc').textContent = 'Segnale GPS Assente'; });
 }
 loadWeather(); setInterval(loadWeather, 15 * 60 * 1000);
 
@@ -759,9 +758,9 @@ function startProgressTick() {
 function updateTrackUI(data) {
   const statusEl=document.getElementById('media-status');
   if (!data||!data.item) {
-    document.getElementById('track-title').textContent='Nessuna traccia'; document.getElementById('track-artist').textContent='—';
-    document.getElementById('ls-title').textContent='Nessuna traccia'; document.getElementById('ls-artist').textContent='—';
-    statusEl.textContent='● Dispositivo in standby'; setPlayState(false); return;
+    document.getElementById('track-title').textContent='Nessuna Traccia'; document.getElementById('track-artist').textContent='—';
+    document.getElementById('ls-title').textContent='Nessuna Traccia'; document.getElementById('ls-artist').textContent='—';
+    statusEl.textContent='● Riproduzione Non Attiva'; setPlayState(false); return;
   }
   const item=data.item; const title=item.name||'—'; const artist=(item.artists||[]).map(a=>a.name).join(', ')||'—';
   const img=item.album?.images?.[0]?.url||null; const prog=data.progress_ms||0; const dur=item.duration_ms||0; const play=data.is_playing||false;
@@ -773,7 +772,7 @@ function updateTrackUI(data) {
 
   updateProgress(prog,dur); setPlayState(play);
   if (play) startProgressTick(); else clearInterval(progressTimer);
-  statusEl.textContent=play?'● Riproduzione attiva':'● In pausa';
+  statusEl.textContent=play?'● Riproduzione Attiva':'● Pausa';
 }
 
 async function pollPlayback() { const data=await spotifyCall('/me/player'); if (data!==null) updateTrackUI(data); }
