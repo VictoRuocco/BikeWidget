@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BikeWidget">
+<meta name="apple-mobile-web-app-title" content="Bike Dashboard">
 <link rel="manifest" href="manifest.json">
-<title>BikeWidget</title>
+<title>Bike Dashboard</title>
 <link rel="preconnect" href="http://googleusercontent.com/fonts.googleapis.com/0">
 <link rel="preconnect" href="http://googleusercontent.com/fonts.gstatic.com/0" crossorigin>
 <link href="http://googleusercontent.com/fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Oswald:wght@300;500;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@ html,body {
 /* ── TOPBAR ── */
 #topbar {
   height:var(--topbar-h); display:flex; align-items:center;
-  justify-content:space-between; padding:0 2vw;
+  justify-content:space-between; padding:0 2vw; position: relative;
   background:var(--surf); border-bottom:1px solid var(--border); flex-shrink:0;
 }
 #brand-wrap { display:flex; align-items:center; gap:8px; }
@@ -49,18 +49,19 @@ html,body {
 #topbar-battery {
   display:flex; align-items:center; gap:6px;
   background:var(--surf2); height:26px; padding:0 10px; border-radius:13px;
-  border:1px solid var(--border); font-size:10px;
-  font-weight:600; color:var(--text2); font-variant-numeric:tabular-nums;
+  border:1px solid var(--border); font-size:14px;
+  font-weight:700; color:var(--text2); font-variant-numeric:tabular-nums;
+  position: absolute; left: 50%; transform: translateX(-50%);
 }
 .bat-shell {
-  width:16px; height:9px; border:1px solid var(--muted);
-  border-radius:2px; position:relative; padding:1px; display:flex;
+  width:18px; height:10px; border:1px solid var(--muted);
+  border-radius:4px; position:relative; padding:1px; display:flex; /* Tondeggiante */
 }
 .bat-shell::after {
-  content:''; width:1.5px; height:3px; background:var(--muted);
-  position:absolute; right:-2px; top:2px; border-radius:0 1px 1px 0;
+  content:''; width:2px; height:4px; background:var(--muted);
+  position:absolute; right:-3px; top:2px; border-radius:0 2px 2px 0;
 }
-.bat-level { height:100%; width:0%; background:var(--green); border-radius:1px; transition:width .3s, background .3s; }
+.bat-level { height:100%; width:0%; background:var(--accent); border-radius:2px; transition:width .3s, background .3s; } /* Azzurro come il player */
 .bat-shell.charging .bat-level { background:var(--amber); }
 
 /* ── TOGGLE MODALITÀ ── */
@@ -69,7 +70,7 @@ html,body {
   background:var(--surf2); height:26px; padding:0 10px; border-radius:13px;
   border:1px solid var(--border);
 }
-.tog-label { font-size:9px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; font-weight:600; }
+.tog-label { font-size:14px; color:var(--text2); letter-spacing:.04em; font-weight:700; }
 .tog { position:relative; width:30px; height:16px; cursor:pointer; display:block; }
 .tog input { opacity:0; width:0; height:0; }
 .tog-track { position:absolute; inset:0; background:var(--surf3); border-radius:8px; border:1px solid var(--border); transition:background .2s; }
@@ -118,7 +119,7 @@ html,body {
   flex:1.3; display:flex; flex-direction:column; background:var(--surf2); border-radius:16px;
   border:1px solid var(--border); padding:1.2vh 1.5vw; justify-content:space-between;
 }
-#wx-label { font-size:calc(9px + 0.2vw); letter-spacing:.12em; color:var(--muted); text-transform:uppercase; font-weight:600; text-align:center; }
+#wx-label { font-size:calc(9px + 0.2vw); letter-spacing:.12em; color:var(--accent2); text-transform:uppercase; font-weight:600; text-align:center; }
 #wx-info-row { display:flex; align-items:center; justify-content:center; gap:1.5vw; width:100%; }
 #wx-icon-holder { width:calc(28px + 3vh); height:calc(28px + 3vh); display:flex; align-items:center; justify-content:center; color:var(--text); }
 #wx-icon-holder svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
@@ -174,7 +175,6 @@ html,body {
 
 #media-status { font-size:calc(9px + 0.2vw); color:var(--muted); letter-spacing:.04em; }
 
-/* MODIFICATO PER AVERE IL BADGE PIÙ PULITO */
 #spotify-badge {
   position:absolute; top:1.5vh; right:1.5vw; display:flex; align-items:center; gap:6px;
   font-size:calc(9px + 0.2vw); color:var(--muted); letter-spacing:.06em; cursor:pointer; padding:0.6vh 1.2vw;
@@ -184,7 +184,7 @@ html,body {
 #spotify-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); }
 #spotify-badge.linked #spotify-dot { background:var(--spotify); }
 
-/* ── PANNELLO DELLE PLAYLIST (Griglia a due colonne) ── */
+/* ── PANNELLO DELLE PLAYLIST ── */
 #playlist-overlay {
   display:none; position:fixed; inset:0; z-index:250; background:rgba(0,0,0,.8); backdrop-filter:blur(8px); align-items:center; justify-content:center;
 }
@@ -193,18 +193,16 @@ html,body {
   background:var(--surf); border:1px solid var(--border); border-radius:20px; width:min(85vw, 460px); height:75vh; display:flex; flex-direction:column; overflow:hidden;
 }
 #playlist-header {
-  padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:between; align-items:center; justify-content: space-between;
+  padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;
 }
 #playlist-header h3 { font-size:15px; font-weight:600; color:var(--accent2); }
 #btn-playlist-close { background:none; border:none; color:var(--text2); font-size:20px; cursor:pointer; font-weight:300; }
 
-/* Modifica effettuata: Griglia a due colonne */
 #playlist-list {
   flex:1; overflow-y:auto; padding:16px; display:grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Aggiunto per far espandere le intestazioni su entrambe le colonne */
 .playlist-section-title {
   grid-column: 1 / -1;
   font-size: 12px;
@@ -241,7 +239,7 @@ html,body {
 #btn-spotify-login { background:var(--spotify); color:#000; }
 #btn-setup-close   { background:var(--surf3); color:var(--text2); }
 
-/* ── LOCKSCREEN OVERLAY ── */
+/* ── LOCKSCREEN OVERLAY (AOD) ── */
 #lockscreen {
   display: none; position: fixed; inset: 0; background: #000; z-index: 200; cursor: pointer;
 }
@@ -256,14 +254,8 @@ html,body {
   gap: 3vh;
 }
 
-#ls-left-panel {
-  background: #000000;
-  border-right: 1px solid #ffffff;
-}
-
-#ls-right-panel {
-  background: #000000;
-}
+#ls-left-panel { background: #000000; border-right: 1px solid #ffffff; }
+#ls-right-panel { background: #000000; }
 
 #ls-clock { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2vh; }
 #ls-samsung-time-wrap {
@@ -274,7 +266,7 @@ html,body {
 .ls-time-colon { font-weight:500; color:#ffffff; margin:0 -2px; }
 .ls-time-mins  { font-weight:300; color:#fff; opacity:0.9; }
 
-#ls-date  { font-size:calc(11px + 0.3vw); color:#ffffff; opacity: 0.7; letter-spacing:.1em; text-transform:uppercase; font-weight:400; margin-bottom:0.4vh; }
+#ls-date  { font-size:calc(13px + 0.4vw); color:#ffffff; opacity: 0.7; letter-spacing:.1em; text-transform:uppercase; font-weight:400; margin-bottom:0.4vh; }
 
 #ls-weather {
   display:flex; align-items:center; gap:1.5vw;
@@ -288,8 +280,12 @@ html,body {
 .ls-hr-time { font-size:9px; font-weight:700; color:#ffffff; opacity: 0.6; text-transform:uppercase; }
 .ls-hr-icon { width:16px; height:16px; color:#ffffff; display:flex; align-items:center; }
 .ls-hr-icon svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.8; }
-.ls-hr-pop  { font-size:calc(10px + 0.2vw); font-weight:600; color:#ffffff; font-variant-numeric:tabular-nums; }
-.ls-hr-pop.rainy { color:var(--accent2); }
+.ls-hr-pop  { font-size:calc(14px + 0.3vw); font-weight:700; color:#ffffff; font-variant-numeric:tabular-nums; }
+
+#ls-topbar-battery { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:#ffffff; font-variant-numeric:tabular-nums; }
+#ls-bat-shell { border-color: #ffffff; }
+#lockscreen .bat-shell::after { background: #ffffff; }
+#ls-bat-level { background: #ffffff; }
 
 #ls-music {
   width:100%; max-width: 380px;
@@ -300,18 +296,18 @@ html,body {
 #ls-controls { display:flex; justify-content:center; align-items:center; gap:4vw; width: 100%; }
 
 .ls-ctrl-btn {
-  width:calc(34px + 1.5vw); height:calc(34px + 1.5vw); max-width:48px; max-height:48px;
+  width:calc(44px + 1.5vw); height:calc(44px + 1.5vw); max-width:56px; max-height:56px;
   background:#000000; border:1px solid #ffffff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color: #ffffff;
 }
 .ls-ctrl-btn svg { width:45%; height:45%; }
 
 #ls-play-btn {
-  width:calc(42px + 2vw); height:calc(42px + 2vw); max-width:58px; max-height:58px;
+  width:calc(54px + 2vw); height:calc(54px + 2vw); max-width:68px; max-height:68px;
   background:#000000; border:1px solid #ffffff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color: #ffffff;
 }
 #ls-play-btn svg { width:45%; height:45%; transform:translateX(1px); }
 
-#ls-hint { font-size:9px; color:#ffffff; opacity: 0.4; letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; margin-top: 0.5vh; }
+#ls-hint { font-size:11px; color:#ffffff; opacity: 0.4; letter-spacing:.08em; text-transform:uppercase; text-align:center; font-weight:500; margin-top: 3vh; }
 </style>
 </head>
 <body>
@@ -320,7 +316,7 @@ html,body {
   <div id="topbar">
     <div id="brand-wrap">
       <img id="app-icon" src="icon-192.png" alt="Icona">
-      <span id="logo">BikeWidget</span>
+      <span id="logo">Bike Dashboard</span>
     </div>
 
     <div id="topbar-battery">
@@ -331,13 +327,12 @@ html,body {
     </div>
 
     <div id="topbar-toggle-wrap">
-      <span class="tog-label">Normale</span>
       <label class="tog">
         <input type="checkbox" id="lockmode-toggle">
         <span class="tog-track"></span>
         <span class="tog-thumb"></span>
       </label>
-      <span class="tog-label">Blocco</span>
+      <span class="tog-label">AOD</span>
     </div>
   </div>
 
@@ -499,9 +494,9 @@ html,body {
       </div>
     </div>
 
-    <div id="ls-topbar-battery" style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.8); font-variant-numeric:tabular-nums;">
-      <div class="bat-shell" id="ls-bat-shell" style="width:20px; height:11px; border:1px solid rgba(255,255,255,0.5); border-radius:2px; position:relative; padding:1px; display:flex;">
-        <div class="bat-level" id="ls-bat-level" style="height:100%; width:0%; background:rgba(255,255,255,0.9); border-radius:1px; transition:width .3s, background .3s;"></div>
+    <div id="ls-topbar-battery">
+      <div class="bat-shell" id="ls-bat-shell">
+        <div class="bat-level" id="ls-bat-level"></div>
       </div>
       <span id="ls-bat-txt">--%</span>
     </div>
@@ -542,7 +537,6 @@ async function initBattery() {
       document.getElementById('bat-txt').textContent = `${pct}%`;
       document.getElementById('bat-level').style.width = `${pct}%`;
       
-      // Specchio Lockscreen
       document.getElementById('ls-bat-txt').textContent = `${pct}%`;
       document.getElementById('ls-bat-level').style.width = `${pct}%`;
 
@@ -618,6 +612,18 @@ async function loadWeather() {
   if (!navigator.geolocation) { document.getElementById('wx-desc').textContent = 'GPS Non Supportato'; return; }
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lon } = pos.coords;
+    
+    // Reverse Geocoding
+    try {
+      const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&localityLanguage=it`;
+      const geoRes = await fetch(geoUrl);
+      const geoData = await geoRes.json();
+      const city = geoData.locality || geoData.city || 'Posizione Attuale';
+      document.getElementById('wx-label').textContent = city;
+    } catch(e) {
+      document.getElementById('wx-label').textContent = 'Meteo';
+    }
+
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,weathercode&hourly=weathercode,precipitation_probability&timezone=auto`;
       const res  = await fetch(url); const data = await res.json();
@@ -636,7 +642,6 @@ async function loadWeather() {
       document.getElementById('hr1-pop').textContent = `${pop1h}%`;
       document.getElementById('hr1-pop').className = pop1h > 20 ? "hr-pop rainy" : "hr-pop";
       
-      // Specchio Lockscreen
       document.getElementById('ls-hr1-icon').innerHTML = SVG_ICONS[WX_MAPPING[code1h] || 'clear'];
       document.getElementById('ls-hr1-pop').textContent = `${pop1h}%`;
       document.getElementById('ls-hr1-pop').className = pop1h > 20 ? "ls-hr-pop rainy" : "ls-hr-pop";
@@ -647,7 +652,6 @@ async function loadWeather() {
       document.getElementById('hr2-pop').textContent = `${pop2h}%`;
       document.getElementById('hr2-pop').className = pop2h > 20 ? "hr-pop rainy" : "hr-pop";
       
-      // Specchio Lockscreen
       document.getElementById('ls-hr2-icon').innerHTML = SVG_ICONS[WX_MAPPING[code2h] || 'clear'];
       document.getElementById('ls-hr2-pop').textContent = `${pop2h}%`;
       document.getElementById('ls-hr2-pop').className = pop2h > 20 ? "ls-hr-pop rainy" : "ls-hr-pop";
